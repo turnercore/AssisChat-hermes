@@ -2,7 +2,6 @@
 //  AssisChatApp.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-05.
 //
 
 import SwiftUI
@@ -20,6 +19,7 @@ struct AssisChatApp: App {
 
     init() {
         SharedUserDefaults.migrateIfNeeded()
+        HermesFontLoader.registerBundledFonts()
 
         let essentialFeature = EssentialFeature(persistenceController: persistenceController)
         let proFeature = ProFeature()
@@ -43,7 +43,12 @@ struct AssisChatApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            let resolvedColorScheme = settingsFeature.selectedAppTheme.preferredColorScheme
+            let theme = settingsFeature.selectedAppTheme.theme(for: resolvedColorScheme)
+
+            HermesThemeHost {
+                ContentView()
+            }
 //            #if os(macOS)
 //                .frame(minWidth: 800, minHeight: 500)
 //            #endif
@@ -56,11 +61,12 @@ struct AssisChatApp: App {
                 .environmentObject(chatFeature)
                 .environmentObject(messageFeature)
                 .environmentObject(chattingFeature)
+                .environment(\.hermesTheme, theme)
 
                 // Initiations
-                .preferredColorScheme(settingsFeature.selectedColorScheme.systemColorScheme)
-                .tint(settingsFeature.selectedTint?.color)
-                .symbolVariant(settingsFeature.selectedSymbolVariant.system)
+            .preferredColorScheme(resolvedColorScheme)
+            .tint(theme.primary)
+            .symbolVariant(.fill)
 
                 // Error showing
                 .alert(
@@ -80,15 +86,21 @@ struct AssisChatApp: App {
 
         #if os(macOS)
         Settings {
-            MacOSSettingsView()
+            let resolvedColorScheme = settingsFeature.selectedAppTheme.preferredColorScheme
+            let theme = settingsFeature.selectedAppTheme.theme(for: resolvedColorScheme)
+
+            HermesThemeHost {
+                MacOSSettingsView()
+            }
                 .environmentObject(essentialFeature)
                 .environmentObject(settingsFeature)
                 .environmentObject(proFeature)
+                .environment(\.hermesTheme, theme)
 
                 // Initiations
-                .preferredColorScheme(settingsFeature.selectedColorScheme.systemColorScheme)
-                .tint(settingsFeature.selectedTint?.color)
-                .symbolVariant(settingsFeature.selectedSymbolVariant.system)
+            .preferredColorScheme(resolvedColorScheme)
+            .tint(theme.primary)
+            .symbolVariant(.fill)
         }
         #endif
     }

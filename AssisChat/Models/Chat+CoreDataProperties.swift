@@ -2,7 +2,6 @@
 //  Chat+CoreDataProperties.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-04-18.
 //
 //
 

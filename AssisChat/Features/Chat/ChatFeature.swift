@@ -2,7 +2,6 @@
 //  ChatFeature.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-05.
 //
 
 import Foundation
@@ -38,8 +37,9 @@ class ChatFeature: ObservableObject {
 
 // MARK: - Data
 extension ChatFeature {
-    func createChat(_ plainChat: PlainChat, forModel: String? = nil) {
-        guard plainChat.available else { return }
+    @discardableResult
+    func createChat(_ plainChat: PlainChat, forModel: String? = nil) -> Chat? {
+        guard plainChat.available else { return nil }
 
         let chat = Chat(context: essentialFeature.context)
 
@@ -59,6 +59,8 @@ extension ChatFeature {
         }
 
         essentialFeature.persistData()
+
+        return chat
     }
 
     func updateChat(_ plainChat: PlainChat, for chat: Chat) {
@@ -91,7 +93,7 @@ extension ChatFeature {
 
             try essentialFeature.context.save()
         } catch {
-            print("Error fetching or deleting messages: \(error)")
+            essentialFeature.appendAlert(alert: ErrorAlert(message: "Failed to clear messages."))
         }
     }
 
@@ -111,20 +113,5 @@ extension ChatFeature {
         chat.rawPinOrder = Chat.unpinned
 
         essentialFeature.persistData()
-    }
-}
-
-
-// MARK: - Templates
-extension ChatFeature {
-    func createPresets(presets: [PlainChat], forModel: String? = nil) {
-        // Reversed for correct order
-        for var template in presets.reversed() {
-            if let model = forModel {
-                template.model = model
-            }
-
-            createChat(template)
-        }
     }
 }

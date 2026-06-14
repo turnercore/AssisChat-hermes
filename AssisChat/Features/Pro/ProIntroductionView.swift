@@ -2,11 +2,9 @@
 //  ProIntroductionView.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-19.
 //
 
 import SwiftUI
-import StoreKit
 
 struct ProIntroductionView: View {
     @Environment(\.dismiss) private var dismiss
@@ -24,11 +22,7 @@ struct ProIntroductionView: View {
                         .cornerRadius(20)
                     HStack {
                         Image(systemName: "laurel.leading")
-                        if proFeature.pro {
-                            Text("Hey, Friend", comment: "The coffee plan summary")
-                        } else {
-                            Text("You are trying the Coffee plan", comment: "The free trying plan summary")
-                        }
+                        Text("Hermes Local Fork")
                         Image(systemName: "laurel.trailing")
                     }
                     .font(proFeature.pro ? .title2 : .headline)
@@ -38,32 +32,12 @@ struct ProIntroductionView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 50)
 
-                if !proFeature.pro {
-                    if proFeature.isRunningInTestFlight {
-                        TestFlightPrompt()
-                            .padding()
-                    } else {
-                        BuyMeCoffee()
-                            .padding()
-                    }
-                }
-
-                if proFeature.pro {
-                    Text("You are in")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                        .padding(.horizontal)
-                        .foregroundColor(.secondary)
-                        .font(.subheadline)
-                } else {
-                    Text("Buy me any size of coffee, you will")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                        .padding(.horizontal)
-                        .foregroundColor(.secondary)
-                        .font(.subheadline)
-                        .padding(.top, 30)
-                }
+                Text("Local features are unlocked. StoreKit purchase code has been removed from this fork.")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    .padding(.horizontal)
+                    .foregroundColor(.secondary)
+                    .font(.subheadline)
 
                 ProFeatureList()
 
@@ -96,29 +70,8 @@ struct ProFeatureList: View {
                 .foregroundColor(.appRed)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("Support Us")
-                Text("Your support is our driving force for moving forward.")
-                    .foregroundColor(.secondary)
-                    .font(.subheadline)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color.secondaryGroupedBackground)
-        .cornerRadius(12)
-        .padding(.horizontal)
-
-        HStack(alignment: .top) {
-            Image(systemName: "square.and.arrow.up")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 36, height: 36)
-                .font(.largeTitle)
-                .foregroundColor(.yellow)
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Share Extension", comment: "Share Extension feature title in pro introduction.")
-                Text("Process text from other apps with Share Extension.", comment: "Share Extension feature summary in pro introduction.")
+                Text("Privacy Hardened")
+                Text("Provider secrets are stored in Keychain and sensitive logs are removed.")
                     .foregroundColor(.secondary)
                     .font(.subheadline)
             }
@@ -138,8 +91,8 @@ struct ProFeatureList: View {
                 .foregroundColor(.appBlue)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("iCloud Sync")
-                Text("Sync chats and messages across devices using iCloud.")
+                Text("Local Storage")
+                Text("CloudKit sync is disabled for this fork by default.")
                     .foregroundColor(.secondary)
                     .font(.subheadline)
             }
@@ -191,131 +144,6 @@ struct ProFeatureList: View {
         .background(Color.secondaryGroupedBackground)
         .cornerRadius(12)
         .padding(.horizontal)
-    }
-}
-
-private struct TestFlightPrompt: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "heart")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 36, height: 36)
-                .font(.largeTitle)
-                .foregroundColor(.appRed)
-
-            Text("You are using the TestFlight version. Please download the app from AppStore and buy me a coffee to support me.")
-        }
-    }
-}
-
-private struct BuyMeCoffee: View {
-    @EnvironmentObject private var proFeature: ProFeature
-
-    @State private var selectedCoffee: Product?
-    @State private var purchasing = false
-
-    private var coffeeToPurchase: Product? {
-        selectedCoffee ?? proFeature.defaultProduct
-    }
-
-    private let gridColumns = [
-        GridItem(.flexible()),
-        GridItem(.flexible()),
-        GridItem(.flexible())
-    ]
-
-    var body: some View {
-        VStack {
-            LazyVGrid(columns: gridColumns) {
-                ForEach(proFeature.priceOrderedProducts) { product in
-                    VStack(spacing: 0) {
-                        Text(product.displayName)
-                            .font(.footnote)
-                            .lineLimit(2)
-                            .foregroundColor(product == coffeeToPurchase ? .primary : .secondary)
-                        if proFeature.limitedTimeCoffeeIds.contains(product.id) {
-                            Text("Limited-time", comment: "The limited-time label text for coffee products")
-                                .padding(2)
-                                .background(Color.appRed)
-                                .colorScheme(.dark)
-                                .cornerRadius(2)
-                                .font(.footnote)
-                            Spacer()
-                        } else {
-                            Spacer()
-                                .frame(minHeight: 10)
-                        }
-                        Text(product.displayPrice)
-                            .bold()
-                            .foregroundColor(product == coffeeToPurchase ? .accentColor : .primary)
-                    }
-                    .padding(.vertical)
-                    .padding(.horizontal, 5)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.secondaryGroupedBackground)
-                    .cornerRadius(12)
-                    .onTapGesture {
-                        selectedCoffee = product
-                        Haptics.veryLight()
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(coffeeToPurchase == product ? Color.accentColor : Color.clear, lineWidth: 1)
-                    )
-                }
-            }
-
-            Text(coffeeToPurchase?.description ?? "Select A Size")
-                .foregroundColor(.secondary)
-
-            Button {
-                Task {
-                    purchasing = true
-                    await purchase()
-                    purchasing = false
-                }
-            } label: {
-                HStack {
-                    if purchasing {
-                        UniformProgressView()
-                            .padding(.horizontal, 5)
-                    }
-
-                    Text("Good Luck", comment: "The buying button in pro introduction")
-                }
-                .frame(maxWidth: .infinity)
-#if os(iOS)
-                .padding()
-                .background(Color.accentColor)
-                .cornerRadius(15)
-                .foregroundColor(.white)
-#endif
-            }
-            #if os(macOS)
-            .buttonStyle(.borderedProminent)
-            #endif
-            .disabled(purchasing)
-
-            Button("Restore Purchase") {
-                proFeature.prepareAndRestore()
-            }
-        }
-        .task {
-            proFeature.prepareAndRestore()
-        }
-    }
-
-
-    @MainActor
-    func purchase() async {
-        guard let coffeeToPurchase = coffeeToPurchase else { return }
-
-        do {
-            _ = try await proFeature.purchase(coffeeToPurchase)
-        } catch {
-            print("Failed coffee purchase: \(error)")
-        }
     }
 }
 

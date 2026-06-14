@@ -2,7 +2,6 @@
 //  MacOSSettingsView.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-04-24.
 //
 
 import SwiftUI
@@ -101,6 +100,7 @@ struct MacOSSettingsView: View {
             }
         }
         .frame(minWidth: 500, maxWidth: .infinity, minHeight: 500, maxHeight: .infinity)
+        .background(Color.groupedBackground)
     }
 }
 

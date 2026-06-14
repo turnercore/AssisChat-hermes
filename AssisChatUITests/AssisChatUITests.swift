@@ -2,7 +2,6 @@
 //  AssisChatUITests.swift
 //  AssisChatUITests
 //
-//  Created by Nooc on 2023-03-05.
 //
 
 import XCTest

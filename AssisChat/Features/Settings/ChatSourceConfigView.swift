@@ -2,231 +2,58 @@
 //  ChatSourceConfigView.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-06.
 //
 
 import SwiftUI
 
 struct ChatSourceConfigView: View {
-    private enum Source {
-        case chatGPT
-        case claude
-    }
-
     @EnvironmentObject private var settingsFeature: SettingsFeature
-
-    let successAlert: Bool
-    let backWhenConfigured: Bool
-    let onConfigured: ((_: ChattingAdapter) -> Void)?
-
-    @State private var selectedSource: Source = .chatGPT
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Picker(selection: $selectedSource) {
-                Text("ChatGPT")
-                    .tag(Source.chatGPT)
-
-                Text("Claude")
-                    .tag(Source.claude)
-            } label: {
-                EmptyView()
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.vertical, 5)
-
-            if selectedSource == .chatGPT {
-                let view = OpenAIContent(
-                    openAIAPIKey: settingsFeature.configuredOpenAIAPIKey ?? "",
-                    openAIDomain: settingsFeature.configuredOpenAIDomain ?? "",
-                    successAlert: successAlert,
-                    backWhenConfigured: backWhenConfigured,
-                    onConfigured: onConfigured
-                )
-                .ignoresSafeArea()
-                .tag(Source.chatGPT)
-
-                if #available(iOS 16, macOS 13, *) {
-                    view.scrollDismissesKeyboard(.immediately)
-                } else {
-                    view
-                }
-            } else if selectedSource == .claude {
-                let view = AnthropicContent(
-                    apiKey: settingsFeature.configuredAnthropicAPIKey ?? "",
-                    domain: settingsFeature.configuredAnthropicDomain ?? "",
-                    successAlert: successAlert,
-                    backWhenConfigured: backWhenConfigured,
-                    onConfigured: onConfigured
-                )
-                .ignoresSafeArea()
-                .tag(Source.claude)
-
-                if #available(iOS 16, macOS 13, *) {
-                    view.scrollDismissesKeyboard(.immediately)
-                } else {
-                    view
-                }
-            }
-        }
-#if os(iOS)
-        .background(Color.groupedBackground)
-#endif
-    }
-}
-
-private struct OpenAIContent: View {
-    @Environment(\.dismiss) private var dismiss
-
-    @EnvironmentObject private var settingsFeature: SettingsFeature
-
-    @State var alertText: LocalizedStringKey? = nil
-    @State var openAIAPIKey: String
-    @State var openAIDomain: String
-
-    @State private var validating = false
+    @Environment(\.hermesTheme) private var theme
 
     let successAlert: Bool
     let backWhenConfigured: Bool
     let onConfigured: ((_: ChattingAdapter) -> Void)?
 
     var body: some View {
-            Form {
-#if os(iOS)
-                Section {
-                    VStack {
-                        Image("chatgpt")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                }
-#endif
+        Group {
+            let view = HermesContent(
+                apiKey: settingsFeature.configuredHermesAPIKey ?? "",
+                baseURL: settingsFeature.configuredHermesBaseURL ?? "",
+                sessionId: settingsFeature.configuredHermesSessionId ?? "",
+                sessionKey: settingsFeature.configuredHermesSessionKey ?? "",
+                successAlert: successAlert,
+                backWhenConfigured: backWhenConfigured,
+                onConfigured: onConfigured
+            )
+            .ignoresSafeArea()
 
-                Section {
-#if os(iOS)
-                    SecureField(String("sk-XXXXXXX"), text: $openAIAPIKey)
-                        .disableAutocorrection(true)
-#else
-                    SecureField("", text: $openAIAPIKey)
-                        .disableAutocorrection(true)
-                        .textFieldStyle(.roundedBorder)
-#endif
-                } header: {
-                    Text("SETTINGS_CHAT_SOURCE_OPENAI_KEY")
-                } footer: {
-                    Text("SETTINGS_CHAT_SOURCE_OPENAI_KEY_HINT")
-                }
-
-                Section {
-#if os(iOS)
-                    TextField(String("api.openai.com"), text: $openAIDomain)
-                        .disableAutocorrection(true)
-#else
-                    TextField("", text: $openAIDomain)
-                        .disableAutocorrection(true)
-                        .textFieldStyle(.roundedBorder)
-#endif
-                } header: {
-                    Text("SETTINGS_CHAT_SOURCE_OPENAI_DOMAIN")
-#if os(macOS)
-                        .padding(.top, 20)
-#endif
-                } footer: {
-                    Text("SETTINGS_CHAT_SOURCE_OPENAI_DOMAIN_HINT")
-                }
-
-                Section {
-                    Button {
-                        validateAndSave()
-                    } label: {
-                        HStack {
-                            if validating {
-                                UniformProgressView()
-                            }
-
-                            Text("SETTINGS_CHAT_SOURCE_VALIDATE_AND_SAVE")
-                                .bold()
-                        }
-                        .frame(maxWidth: .infinity)
-#if os(iOS)
-                        .padding()
-#else
-                        .padding(5)
-#endif
-                        .background(Color.accentColor)
-                        .foregroundColor(.primary)
-                        .colorScheme(.dark)
-                        .cornerRadius(10)
-                    }
-                    .disabled(validating)
-                    .listRowInsets(EdgeInsets())
-                    .buttonStyle(.plain)
-                } footer: {
-                    Text("The OpenAI API services are provided by OpenAI company, and the rights for data usage and fee collection are reserved by OpenAI company. You can find more information about data usage and fee collection at https://platform.openai.com.")
-                }
-
-                CopyrightView()
-                    .listRowBackground(Color.clear)
+            if #available(iOS 16, macOS 13, *) {
+                view.scrollDismissesKeyboard(.immediately)
+            } else {
+                view
             }
-        #if os(macOS)
-            .padding()
-        #endif
-            .alert(alertText ?? "", isPresented: Binding(get: {
-                alertText != nil
-            }, set: { _ in
-                alertText = nil
-            })) {
-
-            }
-    }
-
-    func validateAndSave() -> Void {
-        Task {
-            if openAIAPIKey.isEmpty {
-                alertText = "SETTINGS_CHAT_SOURCE_NO_API_KEY"
-                return
-            }
-
-            let domain = openAIDomain.isEmpty ? nil : openAIDomain
-
-            do {
-                validating = true
-
-                let adapter = try await settingsFeature.validateAndConfigOpenAI(apiKey: openAIAPIKey, for: domain)
-
-                if successAlert {
-                    alertText = "SETTINGS_CHAT_SOURCE_VALIDATE_AND_SAVE_SUCCESS"
-                }
-
-                onConfigured?(adapter)
-
-                if backWhenConfigured {
-                    dismiss()
-                }
-            } catch ChattingError.validating(let message) {
-                alertText = message
-            } catch {
-                alertText = LocalizedStringKey(error.localizedDescription)
-            }
-
-            validating = false
         }
+#if os(iOS)
+        .background(theme.background)
+#endif
     }
 }
 
-private struct AnthropicContent: View {
+private struct HermesContent: View {
     @Environment(\.dismiss) private var dismiss
 
     @EnvironmentObject private var essentialFeature: EssentialFeature
     @EnvironmentObject private var settingsFeature: SettingsFeature
+    @Environment(\.hermesTheme) private var theme
 
     @State var apiKey: String
-    @State var domain: String
+    @State var baseURL: String
+    @State var sessionId: String
+    @State var sessionKey: String
+    @State private var defaultProfileDisplayName = ""
 
     @State private var validating = false
+    @State private var showAdvancedOptions = false
 
     let successAlert: Bool
     let backWhenConfigured: Bool
@@ -236,12 +63,13 @@ private struct AnthropicContent: View {
         Form {
 #if os(iOS)
             Section {
-                VStack {
-                    Image("anthropic")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .cornerRadius(10)
+                VStack(spacing: 10) {
+                    Image(systemName: "network")
+                        .font(.system(size: 42, weight: .semibold))
+                        .foregroundColor(.accentColor)
+
+                    Text("DaisyChat")
+                        .font(.headline)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
             }
@@ -249,7 +77,25 @@ private struct AnthropicContent: View {
 
             Section {
 #if os(iOS)
-                SecureField(String("sk-ant-XXXXXXX"), text: $apiKey)
+                TextField("http://host:8642", text: $baseURL)
+                    .keyboardType(.URL)
+                    .textInputAutocapitalization(.never)
+                    .disableAutocorrection(true)
+#else
+                TextField("", text: $baseURL)
+                    .disableAutocorrection(true)
+                    .textFieldStyle(.roundedBorder)
+#endif
+            } header: {
+                Text("Hermes API Server")
+            } footer: {
+                Text("Run `hermes gateway`, then use the reachable server URL. Leave blank for http://127.0.0.1:8642.")
+            }
+
+            Section {
+#if os(iOS)
+                SecureField("API_SERVER_KEY", text: $apiKey)
+                    .textInputAutocapitalization(.never)
                     .disableAutocorrection(true)
 #else
                 SecureField("", text: $apiKey)
@@ -257,27 +103,55 @@ private struct AnthropicContent: View {
                     .textFieldStyle(.roundedBorder)
 #endif
             } header: {
-                Text("Claude API Key")
+                Text("Bearer Token")
             } footer: {
-                Text("Create a Claude API Key from https://console.anthropic.com/account/keys")
+                Text("Stored in Keychain. This key controls Hermes and its tools; use a strong local secret.")
             }
 
             Section {
 #if os(iOS)
-                TextField(String("api.anthropic.com"), text: $domain)
+                TextField("My Hermes", text: $defaultProfileDisplayName)
+                    .textInputAutocapitalization(.words)
                     .disableAutocorrection(true)
 #else
-                TextField("", text: $domain)
+                TextField("", text: $defaultProfileDisplayName)
                     .disableAutocorrection(true)
                     .textFieldStyle(.roundedBorder)
 #endif
             } header: {
-                Text("Claude API domain (optional)")
-#if os(macOS)
-                    .padding(.top, 20)
-#endif
+                Text("Default Profile Display Name")
             } footer: {
-                Text("Use proxy domain. We recommend leaving it blank to use the default value. Please use a domain that you completely trust, otherwise your API key will be leaked.")
+                Text("Local-only label for `hermes-agent`. Requests still use the real Hermes model id.")
+            }
+
+            Section {
+                Toggle("Advanced Hermes Options", isOn: $showAdvancedOptions)
+            } footer: {
+                Text("Most setups do not need these. Use advanced options only when binding requests to a specific Hermes session.")
+            }
+
+            if showAdvancedOptions {
+                Section {
+#if os(iOS)
+                    TextField("mobile", text: $sessionId)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                    TextField("agent:main:ios", text: $sessionKey)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+#else
+                    TextField("", text: $sessionId)
+                        .disableAutocorrection(true)
+                        .textFieldStyle(.roundedBorder)
+                    TextField("", text: $sessionKey)
+                        .disableAutocorrection(true)
+                        .textFieldStyle(.roundedBorder)
+#endif
+                } header: {
+                    Text("Session Scope")
+                } footer: {
+                    Text("Optional Hermes headers for stateful workflows. Newlines and control characters are rejected. Session key is capped at 256 characters.")
+                }
             }
 
             Section {
@@ -298,39 +172,44 @@ private struct AnthropicContent: View {
 #else
                     .padding(5)
 #endif
-                    .background(Color.accentColor)
-                    .foregroundColor(.primary)
-                    .colorScheme(.dark)
+                    .background(theme.primary)
+                    .foregroundColor(theme.primaryForeground)
                     .cornerRadius(10)
                 }
                 .disabled(validating)
                 .listRowInsets(EdgeInsets())
                 .buttonStyle(.plain)
             } footer: {
-                Text("The Anthropic API and Claude services are provided by Anthropic company, and the rights for data usage and fee collection are reserved by Anthropic company. You can find more information about data usage and fee collection at https://www.anthropic.com.")
+                Text("This app will send prompts and selected history to your configured Hermes server.")
             }
 
             CopyrightView()
                 .listRowBackground(Color.clear)
         }
-        #if os(macOS)
+#if os(macOS)
         .padding()
-        #endif
+#endif
+        .onAppear {
+            defaultProfileDisplayName = settingsFeature.hermesDefaultProfileDisplayName
+        }
     }
 
-    func validateAndSave() -> Void {
+    func validateAndSave() {
         Task {
             if apiKey.isEmpty {
                 essentialFeature.appendAlert(alert: ErrorAlert(message: "SETTINGS_CHAT_SOURCE_NO_API_KEY"))
                 return
             }
 
-            let domain = domain.isEmpty ? nil : domain
-
             do {
                 validating = true
-
-                let adapter = try await settingsFeature.validateAndConfigAnthropic(apiKey: apiKey, for: domain)
+                settingsFeature.hermesDefaultProfileDisplayName = defaultProfileDisplayName
+                let adapter = try await settingsFeature.validateAndConfigHermes(
+                    apiKey: apiKey,
+                    baseURL: baseURL.nilIfBlank,
+                    sessionId: sessionId.nilIfBlank,
+                    sessionKey: sessionKey.nilIfBlank
+                )
 
                 if successAlert {
                     essentialFeature.appendAlert(alert: GeneralAlert(title: "SUCCESS", message: "SETTINGS_CHAT_SOURCE_VALIDATE_AND_SAVE_SUCCESS"))

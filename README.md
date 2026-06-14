@@ -1,51 +1,78 @@
-# AssisChat
+# DaisyChat
 
-[中文](./README.zh.md)
+DaisyChat is becoming a Hermes-first native client for iPhone and iPad.
 
-An AI assistant chat app built using Swift and SwiftUI, supporting iOS/iPadOS/macOS, and allowing you to use your own OpenAI/Claude API Key. [The blog](https://nooc.me/en/posts/i-open-sourced-an-ai-chat-app-assischat) about the open source of this app.
+The goal is simple: make your Hermes backend feel like a real Apple-native mobile app, not a generic API wrapper. It should let you chat with Hermes, inspect backend health, browse sessions, watch runs progress, and approve or stop work from your iPad or iPhone.
 
-Features:
+macOS is intentionally out of scope because Hermes already has a separate macOS app.
 
-- [x] Support iOS/iPadOS/macOS
-- [x] Use your own OpenAI/Claude API key and the base url
-- [x] Custom chat behaviors, such as system message, copy message content after received
-- [x] Share text from other apps with Share Extension
-- [x] Using in the input field in other apps with Keyboard Extension
+## Product Direction
 
-## Screenshots
+This fork is focused on:
 
-<p float="left">
-  <img src="./images/ios.en.1.png" width="200" />
-  <img src="./images/ios.en.2.png" width="200" />
-  <img src="./images/ios.en.3.png" width="200" />
-  <img src="./images/ios.en.4.png" width="200" />
-</p>
+- A first-class Hermes backend experience for iOS and iPadOS.
+- Private bring-your-own-server usage with credentials stored in Keychain.
+- Hermes API Server support through the OpenAI-compatible chat endpoint as the first path.
+- Rich Hermes dashboard support for health, capabilities, models, sessions, messages, and runs.
+- Modern Apple-native UI patterns with iPad-friendly navigation.
+- Two themes: a clean modern default and a Hermes Nous Research-flavored theme.
 
-## Usage
+OpenAI and Anthropic direct-provider setup has been removed from the product path for now. This fork is intentionally Hermes-first.
 
-You can directly download the application from the [App Store](https://apps.apple.com/us/app/assischat-ai-assistant-chat/id6446092669).
+## Hermes Backend
 
-Alternatively, you can build the application locally using Xcode by following the steps below.
+Default Hermes setup targets a personal Hermes API server:
+
+- Base URL: `http://<host>:8642`
+- OpenAI-compatible API base: `/v1`
+- Default model: `hermes-agent`
+- Auth: `Authorization: Bearer <API_SERVER_KEY>`
+- Health: `GET /health`
+- Capabilities: `GET /v1/capabilities`
+- Session headers: `X-Hermes-Session-Id` and `X-Hermes-Session-Key`
+
+The app includes an initial Hermes dashboard for checking connection state, discovering capabilities/models, listing sessions, reading session messages, and starting/stopping runs when the backend exposes those features.
+
+## Privacy Posture
+
+This fork is privacy-first before real credentials are used.
+
+- Provider secrets are stored in Keychain, not shared defaults.
+- Legacy API keys are migrated out of shared defaults when possible.
+- StoreKit purchase code has been removed.
+- CloudKit sync and push notification entitlements have been removed.
+- Keyboard and share extension UI has been removed from the main product path.
+
+Prompts and selected chat history still go to the backend you configure. For Hermes, that should be a server you control.
+
+## Current Status
+
+Implemented:
+
+- Hermes-only settings and adapter.
+- Hermes health/capabilities/models/session/run client APIs.
+- Keychain-backed provider secrets and migration.
+- Hermes dashboard foundation.
+- Modern default and Hermes Nous theme support.
+- StoreKit/CloudKit/push cleanup.
+- Upstream developer identity removed from app branding and bundle IDs.
+
+Still needs real-device smoke testing against a live Hermes server.
 
 ## Build
 
-- Clone the project to your local machine using `git clone https://github.com/noobnooc/AssisChat.git`.
-- Open the `AssisChat/AssisChat.xcodeproj` file to open the project in Xcode.
-- Click on `AssisChat` at the top of the project structure on the left side of Xcode to enter project settings.
-- Click on `AssisChat`, `Share`, and `Keyboard` under `TARGETS` one by one, and modify their `Bundle Identifier` to a reverse domain name notation that is unique to you.
-- Start the build process.
+Open `AssisChat.xcodeproj` in Xcode and build the `AssisChat` scheme.
 
-## Acknowledgements
+Current fork identity:
 
-- [CodeScanner](https://github.com/twostraws/CodeScanner)
-- [GPT3 Tokenizer](https://github.com/aespinilla/GPT3-Tokenizer)
-- [LDSwiftEventSource](https://github.com/launchdarkly/swift-eventsource)
-- [Lottie](https://github.com/airbnb/lottie-ios)
-- [LottieSwiftUI](https://github.com/LukasHromadnik/Lottie-SwiftUI)
-- [Splash](https://github.com/JohnSundell/Splash)
-- [swift-markdown-ui](https://github.com/gonzalezreal/MarkdownUI)
-- [SwiftSoup](https://github.com/scinfu/SwiftSoup)
+- App bundle ID: `com.turnercore.AssisChatHermes`
+- App group: `group.com.turnercore.AssisChatHermes`
+- Keychain group: `BWDKW435B4.com.turnercore.AssisChatHermes.shared`
 
-## License
+For physical iPhone/iPad testing, Xcode must have an active Apple developer account for the configured team and must create a provisioning profile for the app.
 
-MIT
+## Credits And License
+
+This fork is based on the MIT-licensed AssisChat project. The original MIT license notice is preserved in `LICENSE`.
+
+Third-party packages include LDSwiftEventSource, Splash, and MarkdownUI.

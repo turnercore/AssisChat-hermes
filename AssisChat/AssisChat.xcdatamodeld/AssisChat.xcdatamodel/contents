@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22E261" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
-    <entity name="Chat" representedClassName="Chat" syncable="YES">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22E261" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Chat" representedClassName="Chat" syncable="NO">
         <attribute name="rawAutoCopy" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="rawColor" optional="YES" attributeType="String"/>
         <attribute name="rawCreatedAt" attributeType="Date" defaultDateTimeInterval="699676500" usesScalarValueType="NO"/>
@@ -16,7 +16,7 @@
         <attribute name="rawUpdatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="rMessages" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Message" inverseName="rChat" inverseEntity="Message"/>
     </entity>
-    <entity name="Message" representedClassName="Message" syncable="YES">
+    <entity name="Message" representedClassName="Message" syncable="NO">
         <attribute name="rawContent" optional="YES" attributeType="String"/>
         <attribute name="rawFailedReason" optional="YES" attributeType="String"/>
         <attribute name="rawProcessedContent" optional="YES" attributeType="String"/>

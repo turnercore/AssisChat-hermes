@@ -2,34 +2,61 @@
 //  AssisChatTests.swift
 //  AssisChatTests
 //
-//  Created by Nooc on 2023-03-05.
-//
 
 import XCTest
+@testable import AssisChat
 
 final class AssisChatTests: XCTestCase {
+    func testProviderEndpointNormalizesBaseURL() {
+        let url = ProviderEndpoint.normalizedBaseURL(" http://example.local:8642/ ", defaultValue: "http://127.0.0.1:8642")
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        XCTAssertEqual(url?.absoluteString, "http://example.local:8642")
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testProviderEndpointRejectsInvalidBaseURL() {
+        XCTAssertNil(ProviderEndpoint.normalizedBaseURL("file:///tmp/hermes", defaultValue: "http://127.0.0.1:8642"))
+        XCTAssertNil(ProviderEndpoint.normalizedBaseURL("http://example.com\nAuthorization: Bearer secret", defaultValue: "http://127.0.0.1:8642"))
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func testHermesHeaderValidationRejectsControlCharacters() {
+        XCTAssertTrue(ProviderEndpoint.validHeaderValue("agent:main:ios"))
+        XCTAssertFalse(ProviderEndpoint.validHeaderValue("agent:main\nbad"))
+        XCTAssertFalse(ProviderEndpoint.validHeaderValue("agent:main\rbad"))
+        XCTAssertFalse(ProviderEndpoint.validHeaderValue("agent:main\0bad"))
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        measure {
-            // Put the code you want to measure the time of here.
+    func testHermesCapabilitiesDecoding() throws {
+        let json = """
+        {
+          "object": "hermes.api_server.capabilities",
+          "platform": "hermes-agent",
+          "model": "hermes-agent",
+          "features": {
+            "chat_completions": true,
+            "run_stop": true,
+            "run_approval": false
+          },
+          "session_key_header": "X-Hermes-Session-Key"
         }
+        """.data(using: .utf8)!
+
+        let capabilities = try JSONDecoder().decode(HermesAPIClient.Capabilities.self, from: json)
+
+        XCTAssertEqual(capabilities.model, "hermes-agent")
+        XCTAssertEqual(capabilities.features?["chat_completions"], true)
+        XCTAssertEqual(capabilities.features?["run_stop"], true)
+        XCTAssertEqual(capabilities.features?["run_approval"], false)
+        XCTAssertEqual(capabilities.sessionKeyHeader, "X-Hermes-Session-Key")
     }
 
+    func testKeychainSecretRoundTrip() throws {
+        let key = "test:secret:\(UUID().uuidString)"
+        defer { try? KeychainSecrets.delete(key) }
+
+        try KeychainSecrets.set("secret-value", for: key)
+        XCTAssertEqual(KeychainSecrets.get(key), "secret-value")
+
+        try KeychainSecrets.set(nil, for: key)
+        XCTAssertNil(KeychainSecrets.get(key))
+    }
 }

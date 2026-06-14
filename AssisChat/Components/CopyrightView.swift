@@ -2,8 +2,6 @@
 //  CopyrightView.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-06.
-//
 
 import SwiftUI
 
@@ -19,15 +17,13 @@ struct CopyrightView: View {
             if detailed {
                 Text("Current Version: \(Bundle.main.releaseVersionNumber ?? "")(\(Bundle.main.buildVersionNumber ?? ""))")
                     .font(.system(.footnote))
-                Text(String("Crafted by Nooc(@noobnooc)"))
+                Text("DaisyChat")
                     .font(.system(.footnote))
                     .padding(.bottom)
             }
 
-            Image("NoocAvatarTemplate")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20)
+            Image(systemName: "sparkles")
+                .font(.footnote)
         }
         .frame(maxWidth: .infinity)
         .foregroundColor(.secondary)

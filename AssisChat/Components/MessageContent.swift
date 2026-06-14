@@ -2,7 +2,6 @@
 //  MessageContent.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-04-04.
 //
 
 import SwiftUI
@@ -11,6 +10,7 @@ import Splash
 
 struct MessageContent: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.hermesTheme) private var theme
 
     @EnvironmentObject private var settingsFeature: SettingsFeature
 
@@ -28,18 +28,15 @@ struct MessageContent: View {
             .markdownBlockStyle(\.codeBlock) { configuration in
                 ScrollView(.horizontal) {
                     configuration.label
+                        .font(theme.monoFont(size: settingsFeature.selectedFontSize.value * CGFloat(0.85)))
                         .padding(10)
                         .padding(.trailing, 20)
                 }
-                .markdownTextStyle(textStyle: {
-                    FontFamilyVariant(.monospaced)
-                    FontSize(.em(0.85))
-                })
-                #if os(iOS)
-                .background(Color.tertiaryBackground)
-                #else
-                .background(Color.background.opacity(0.4))
-                #endif
+                .background(theme.card.opacity(0.88))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(theme.border.opacity(0.7), lineWidth: 1)
+                )
                 .cornerRadius(8)
                 .padding(.bottom)
                 .overlay(alignment: .topTrailing) {

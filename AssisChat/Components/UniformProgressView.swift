@@ -2,7 +2,6 @@
 //  UniformProgressView.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-04-24.
 //
 
 import SwiftUI

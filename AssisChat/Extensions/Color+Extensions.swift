@@ -2,7 +2,6 @@
 //  Color+Extensions.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-05.
 //
 
 import Foundation
@@ -89,7 +88,7 @@ extension Color {
 }
 
 // MARK: - RawRepresentable
-extension Color: RawRepresentable {
+extension Color: @retroactive RawRepresentable {
     public var rawValue: String {
         self.hex
     }
@@ -102,4 +101,3 @@ extension Color: RawRepresentable {
         self = color
     }
 }
-

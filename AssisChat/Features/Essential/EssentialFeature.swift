@@ -2,7 +2,6 @@
 //  EssentialFeature.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-05.
 //
 
 import Foundation
@@ -34,6 +33,7 @@ extension EssentialFeature {
     }
 
     func dismissCurrentAlert() -> Void {
+        guard !alertQueue.isEmpty else { return }
         alertQueue.removeFirst()
     }
 

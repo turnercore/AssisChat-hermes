@@ -2,7 +2,6 @@
 //  ChatEditor.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-07.
 //
 
 import SwiftUI
@@ -49,7 +48,7 @@ class ChatEditorModel: ObservableObject {
         self.autoCopy = chat.autoCopy
         self.icon = chat.icon
         self.color = chat.color
-        self.model = chat.rawModel ?? Chat.OpenAIModel.default.rawValue
+        self.model = chat.rawModel ?? Chat.HermesModel.default.rawValue
     }
 
     var plain: PlainChat {
@@ -264,7 +263,7 @@ struct ChatEditor<Actions: View>: View {
 
 struct ChatEditor_Previews: PreviewProvider {
     static var previews: some View {
-        ChatEditor(model: .init(name: "", temperature: .balanced, systemMessage: "", historyLengthToSend: 0, messagePrefix: "", autoCopy: false, icon: .default, color: .default, model: Chat.OpenAIModel.default.rawValue)) {
+        ChatEditor(model: .init(name: "", temperature: .balanced, systemMessage: "", historyLengthToSend: 0, messagePrefix: "", autoCopy: false, icon: .default, color: .default, model: Chat.HermesModel.default.rawValue)) {
 
         }
     }

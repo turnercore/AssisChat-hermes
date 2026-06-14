@@ -2,7 +2,6 @@
 //  Clipboard.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-04-19.
 //
 
 import Foundation

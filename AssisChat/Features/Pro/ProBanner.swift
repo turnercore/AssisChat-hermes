@@ -2,7 +2,6 @@
 //  ProBanner.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-19.
 //
 
 import SwiftUI
@@ -45,7 +44,7 @@ struct ProBanner: View {
                         }
                     }
                     Spacer()
-                    Text(proFeature.pro ? proFeature.largestPurchasedProProduct?.displayName ?? "Coffee" : String(localized: "Learn More"))
+                    Text(proFeature.pro ? proFeature.largestPurchasedProProductName ?? "Local Fork" : String(localized: "Learn More"))
                         .bold()
                         .font(.system(.footnote, design: .rounded))
                         .padding(.horizontal, 20)

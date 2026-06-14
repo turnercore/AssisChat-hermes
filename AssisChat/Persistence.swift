@@ -2,7 +2,6 @@
 //  Persistence.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-05.
 //
 
 import CoreData
@@ -28,12 +27,11 @@ class PersistenceController {
         return result
     }()
 
-    private let containerOptions: NSPersistentCloudKitContainerOptions?
-    let container: NSPersistentCloudKitContainer
+    let container: NSPersistentContainer
     private var mergeRemoteChangesCancelable: AnyCancellable?
 
     init(inMemory: Bool = false) {
-        var container = NSPersistentCloudKitContainer(name: "AssisChat")
+        var container = NSPersistentContainer(name: "AssisChat")
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
@@ -47,7 +45,7 @@ class PersistenceController {
                 }
             }
 
-            container = NSPersistentCloudKitContainer(name: "AssisChat")
+            container = NSPersistentContainer(name: "AssisChat")
         }
 
         // Configure the persistent store description to use the shared app group container
@@ -68,12 +66,6 @@ class PersistenceController {
 
         container.persistentStoreDescriptions.first?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
         container.persistentStoreDescriptions.first?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
-
-        containerOptions = container.persistentStoreDescriptions.first?.cloudKitContainerOptions
-
-        if(!SharedUserDefaults.shared.bool(forKey: SharedUserDefaults.iCloudSync)){
-            container.persistentStoreDescriptions.first?.cloudKitContainerOptions = nil
-        }
 
         migrateStoreIfNeeded(for: container, legacyURL: legacyURL)
 
@@ -112,7 +104,7 @@ class PersistenceController {
     }
 
     func setupCloudSync(sync: Bool) {
-        // TODO: - Implements
+        // CloudKit sync is intentionally disabled in this privacy-focused fork.
     }
 
     private func migrateStoreIfNeeded(for container: NSPersistentContainer, legacyURL: URL?) {

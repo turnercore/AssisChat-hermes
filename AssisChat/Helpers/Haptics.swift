@@ -2,7 +2,6 @@
 //  Haptics.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-05.
 //
 
 import Foundation

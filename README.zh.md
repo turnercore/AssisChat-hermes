@@ -1,47 +1,32 @@
-# AssisChat
+# AssisChat Hermes
 
 [English](./README.md)
 
-一个使用 Swift 和 SwiftUI 构建的 AI 助手对话 app，支持 iOS/iPadOS/macOS，可以使用你自己的 OpenAI/Claude API Key 。关于这个 app 开源的[博客](https://nooc.me/zh/posts/i-open-sourced-an-ai-chat-app-assischat)。
+AssisChat Hermes 是一个面向 iOS/iPadOS 的 SwiftUI 聊天客户端分支，重点支持 Hermes、OpenAI 兼容接口和 Anthropic 兼容接口，并默认采用更严格的隐私设置。
 
 特性:
 
-- [x] 支持 iOS/iPadOS/macOS
-- [x] 使用你自己的 OpenAI/Claude Api key 和地址
-- [x] 自定义对话行为，比如系统消息、接收消息后自动复制等
-- [x] 通过分享扩展，在其它应用中分享内容到 AssisChat
-- [x] 通过键盘扩展，在其它应用的输入框中使用 AssisChat
-
-## 截图
-
-<p float="left">
-  <img src="./images/ios.zh.1.png" width="200" />
-  <img src="./images/ios.zh.2.png" width="200" />
-  <img src="./images/ios.zh.3.png" width="200" />
-  <img src="./images/ios.zh.4.png" width="200" />
-</p>
-
-## 使用
-
-你可以直接在 [App Store](https://apps.apple.com/us/app/assischat-ai-assistant-chat/id6446092669) 中下载该应用。
-
-或者是自己使用 Xcode [在本地构建](#构建)该应用。
+- [x] iOS/iPadOS 原生 SwiftUI 聊天客户端
+- [x] Hermes API Server 配置、健康检查、能力发现、模型、会话和 Runs 仪表盘
+- [x] OpenAI 兼容与 Anthropic 兼容聊天适配器
+- [x] Provider 密钥存储在 Keychain，并支持从旧设置一次性迁移
+- [x] 现代默认主题与 Hermes Nous 主题
+- [x] StoreKit、CloudKit 同步、推送通知权限和键盘发布入口已移除或禁用
 
 ## 构建
 
-- 使用 `git clone https://github.com/noobnooc/AssisChat.git` 将项目克隆到本地。
-- 打开 `AssisChat/AssisChat.xcodeproj` 文件，以使用 Xcode 打开该项目。
-- 点击 Xcode 左侧项目结构里最顶部的 `AssisChat` 进入项目设置
-- 依次点击 `TARGETS` 中的 `AssisChat`、`Share` 和 `Keyboard`，并将它们的 `Bundle Identifier` 修改为以自己域名倒叙开头的、可唯一识别的字符串
-- 开始构建
+- 使用 Xcode 打开 `AssisChat.xcodeproj`。
+- `AssisChat` target 使用 `com.turnercore.AssisChatHermes` 命名空间。
+- App Group 使用 `group.com.turnercore.AssisChatHermes`。
+- Keychain access group 使用 `BWDKW435B4.com.turnercore.AssisChatHermes.shared`。
+- macOS 不属于此分支的目标平台。
 
 ## 鸣谢
 
-- [CodeScanner](https://github.com/twostraws/CodeScanner)
+本分支基于 MIT 许可的 AssisChat 项目。
+
 - [GPT3 Tokenizer](https://github.com/aespinilla/GPT3-Tokenizer)
 - [LDSwiftEventSource](https://github.com/launchdarkly/swift-eventsource)
-- [Lottie](https://github.com/airbnb/lottie-ios)
-- [LottieSwiftUI](https://github.com/LukasHromadnik/Lottie-SwiftUI)
 - [Splash](https://github.com/JohnSundell/Splash)
 - [swift-markdown-ui](https://github.com/gonzalezreal/MarkdownUI)
 - [SwiftSoup](https://github.com/scinfu/SwiftSoup)

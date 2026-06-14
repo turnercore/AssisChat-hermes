@@ -1,42 +1,6 @@
 {
   "pins" : [
     {
-      "identity" : "codescanner",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/twostraws/CodeScanner.git",
-      "state" : {
-        "revision" : "d8f10d992ef32a4187b78a6df320facf75d631d8",
-        "version" : "2.3.1"
-      }
-    },
-    {
-      "identity" : "gpt3-tokenizer",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/aespinilla/GPT3-Tokenizer.git",
-      "state" : {
-        "revision" : "cadab0d19a1602cc505493990a9fc4810d8e3070",
-        "version" : "0.1.2"
-      }
-    },
-    {
-      "identity" : "lottie-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/airbnb/lottie-ios.git",
-      "state" : {
-        "revision" : "d6feea26a370019b4d3a85f5984cb95a2734776f",
-        "version" : "4.2.0"
-      }
-    },
-    {
-      "identity" : "lottie-swiftui",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/LukasHromadnik/Lottie-SwiftUI.git",
-      "state" : {
-        "revision" : "5248df81f494bdb64388b09e68284210a4126ee3",
-        "version" : "1.2.2"
-      }
-    },
-    {
       "identity" : "splash",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/JohnSundell/Splash",
@@ -61,15 +25,6 @@
       "state" : {
         "revision" : "12b351a75201a8124c2f2e1f9fc6ef5cd812c0b9",
         "version" : "2.1.0"
-      }
-    },
-    {
-      "identity" : "swiftsoup",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/scinfu/SwiftSoup.git",
-      "state" : {
-        "revision" : "0e96a20ffd37a515c5c963952d4335c89bed50a6",
-        "version" : "2.6.0"
       }
     }
   ],

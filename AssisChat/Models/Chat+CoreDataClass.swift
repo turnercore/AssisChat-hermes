@@ -2,7 +2,6 @@
 //  Chat+CoreDataClass.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-05.
 //
 //
 
@@ -107,6 +106,20 @@ extension Chat {
         }
 
         static let `default` = Self.gpt35turbo
+    }
+}
+
+// MARK: - Hermes model
+
+extension Chat {
+    var hermesModel: HermesModel {
+        HermesModel(rawValue: rawModel ?? "") ?? .default
+    }
+
+    enum HermesModel: String, CaseIterable {
+        case agent = "hermes-agent"
+
+        static let `default` = agent
     }
 }
 

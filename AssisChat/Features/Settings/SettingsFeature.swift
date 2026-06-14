@@ -2,7 +2,6 @@
 //  SettingsFeature.swift
 //  AssisChat
 //
-//  Created by Nooc on 2023-03-06.
 //
 
 import Foundation
@@ -15,9 +14,7 @@ import UIKit
 #endif
 
 class SettingsFeature: ObservableObject {
-    @AppStorage(SharedUserDefaults.colorScheme, store: SharedUserDefaults.shared) var selectedColorScheme: ColorScheme = .automatic
-    @AppStorage(SharedUserDefaults.tint, store: SharedUserDefaults.shared) private(set) var selectedTint: Tint?
-    @AppStorage(SharedUserDefaults.symbolVariant, store: SharedUserDefaults.shared) var selectedSymbolVariant: SymbolVariant = .fill
+    @AppStorage(SharedUserDefaults.appTheme, store: SharedUserDefaults.shared) var selectedAppTheme: AppTheme = .nous
     @AppStorage(SharedUserDefaults.fontSize, store: SharedUserDefaults.shared) var selectedFontSize: FontSize = .normal
     @AppStorage(SharedUserDefaults.iCloudSync, store: SharedUserDefaults.shared) var iCloudSync = false {
         didSet {
@@ -25,11 +22,18 @@ class SettingsFeature: ObservableObject {
         }
     }
 
-    @AppStorage(SharedUserDefaults.openAIDomain, store: SharedUserDefaults.shared) private(set) var configuredOpenAIDomain: String?
-    @AppStorage(SharedUserDefaults.openAIAPIKey, store: SharedUserDefaults.shared) private(set) var configuredOpenAIAPIKey: String?
+    @AppStorage(SharedUserDefaults.hermesBaseURL, store: SharedUserDefaults.shared) private(set) var configuredHermesBaseURL: String?
+    @AppStorage(SharedUserDefaults.hermesSessionId, store: SharedUserDefaults.shared) var configuredHermesSessionId: String?
+    @AppStorage(SharedUserDefaults.hermesSessionKey, store: SharedUserDefaults.shared) var configuredHermesSessionKey: String?
+    @AppStorage(SharedUserDefaults.hermesModel, store: SharedUserDefaults.shared) var configuredHermesModel = Chat.HermesModel.default.rawValue
+    @AppStorage(SharedUserDefaults.hermesDiscoveredModels, store: SharedUserDefaults.shared) private var configuredHermesDiscoveredModels = ""
+    @AppStorage(SharedUserDefaults.hermesDefaultProfileDisplayName, store: SharedUserDefaults.shared) var hermesDefaultProfileDisplayName = ""
+    @AppStorage(SharedUserDefaults.hermesArchivedSessionIds, store: SharedUserDefaults.shared) private var archivedHermesSessionIds = ""
+    @AppStorage(SharedUserDefaults.archivedChatIds, store: SharedUserDefaults.shared) private var archivedChatIds = ""
 
-    @AppStorage(SharedUserDefaults.anthropicDomain, store: SharedUserDefaults.shared) private(set) var configuredAnthropicDomain: String?
-    @AppStorage(SharedUserDefaults.anthropicAPIKey, store: SharedUserDefaults.shared) private(set) var configuredAnthropicAPIKey: String?
+    var configuredHermesAPIKey: String? {
+        KeychainSecrets.get(SharedUserDefaults.hermesAPIKey)
+    }
 
     let essentialFeature: EssentialFeature
 
@@ -68,162 +72,213 @@ class SettingsFeature: ObservableObject {
     init(essentialFeature: EssentialFeature) {
         self.essentialFeature = essentialFeature
 
+        if selectedAppTheme == .modern || selectedAppTheme == .hermesNous {
+            selectedAppTheme = .nous
+        }
+
         initiateAdapters()
     }
 
-    func adjustColorScheme(_ colorScheme: ColorScheme) {
-        selectedColorScheme = colorScheme
-    }
-
-    func adjustTint(_ tint: Tint?) {
-        selectedTint = tint
-    }
-
-    func adjustSymbolVariant(_ variant: SymbolVariant) {
-        selectedSymbolVariant = variant
-    }
-
     func initiateAdapters() {
-        initiateChatGPTAdapter()
-        initiateClaudeAdapter()
+        SharedUserDefaults.migrateSecretsToKeychainIfNeeded()
+        initiateHermesAdapter()
     }
 
-    func initiateChatGPTAdapter() {
-        guard let apiKey = configuredOpenAIAPIKey, !apiKey.isEmpty else {
+    func initiateHermesAdapter() {
+        guard let apiKey = configuredHermesAPIKey, !apiKey.isEmpty else {
             return
         }
 
-        let adapter = ChatGPTAdapter(essentialFeature: essentialFeature, config: .init(domain: configuredOpenAIDomain, apiKey: apiKey))
-        chattingAdapters[adapter.identifier] = adapter
-    }
-
-    func initiateClaudeAdapter() {
-        guard let apiKey = configuredAnthropicAPIKey, !apiKey.isEmpty else {
-            return
-        }
-
-        let adapter = ClaudeAdapter(essentialFeature: essentialFeature, config: .init(domain: configuredAnthropicDomain, apiKey: apiKey))
+        let adapter = HermesAdapter(
+            essentialFeature: essentialFeature,
+            config: .init(
+                baseURL: configuredHermesBaseURL,
+                apiKey: apiKey,
+                model: configuredHermesModel,
+                discoveredModels: discoveredHermesModels,
+                sessionId: configuredHermesSessionId,
+                sessionKey: configuredHermesSessionKey
+            )
+        )
         chattingAdapters[adapter.identifier] = adapter
     }
 
     @MainActor
-    func validateAndConfigOpenAI(apiKey: String, for domain: String?) async throws -> ChattingAdapter {
-        let adapter = ChatGPTAdapter(essentialFeature: essentialFeature, config: .init(domain: domain, apiKey: apiKey))
+    func validateAndConfigHermes(apiKey: String, baseURL: String?, sessionId: String?, sessionKey: String?) async throws -> ChattingAdapter {
+        let adapter = HermesAdapter(
+            essentialFeature: essentialFeature,
+            config: .init(
+                baseURL: baseURL,
+                apiKey: apiKey,
+                model: configuredHermesModel,
+                discoveredModels: discoveredHermesModels,
+                sessionId: sessionId,
+                sessionKey: sessionKey
+            )
+        )
 
         try await adapter.validateConfig()
 
         chattingAdapters[adapter.identifier] = adapter
-        configuredOpenAIAPIKey = apiKey
-        configuredOpenAIDomain = domain
+        try KeychainSecrets.set(apiKey, for: SharedUserDefaults.hermesAPIKey)
+        configuredHermesBaseURL = baseURL
+        configuredHermesSessionId = sessionId
+        configuredHermesSessionKey = sessionKey
+
+        if let baseURL = adapter.config.normalizedBaseURL {
+            let client = HermesAPIClient(baseURL: baseURL, apiKey: apiKey, sessionId: sessionId, sessionKey: sessionKey)
+            let models = await client.profileCandidates()
+            updateHermesModels(models)
+        }
 
         return adapter
     }
 
+    var discoveredHermesModels: [String] {
+        configuredHermesDiscoveredModels
+            .split(separator: "\n")
+            .map(String.init)
+            .filter { !$0.isEmpty }
+    }
+
     @MainActor
-    func validateAndConfigAnthropic(apiKey: String, for domain: String?) async throws -> ChattingAdapter {
-        let adapter = ClaudeAdapter(essentialFeature: essentialFeature, config: .init(domain: domain, apiKey: apiKey))
+    func updateHermesModels(_ models: [String]) {
+        let normalized = Array(Set(models.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty })).sorted()
+        guard !normalized.isEmpty else { return }
 
-        try await adapter.validateConfig()
+        configuredHermesDiscoveredModels = normalized.joined(separator: "\n")
+        if !normalized.contains(configuredHermesModel) {
+            configuredHermesModel = normalized[0]
+        }
+        initiateHermesAdapter()
+    }
 
-        chattingAdapters[adapter.identifier] = adapter
-        configuredAnthropicAPIKey = apiKey
-        configuredAnthropicDomain = domain
+    func displayName(forHermesModel model: String?) -> String {
+        guard let model = model?.nilIfBlank else {
+            return Chat.HermesModel.default.rawValue
+        }
 
-        return adapter
+        if model == Chat.HermesModel.default.rawValue,
+           let displayName = hermesDefaultProfileDisplayName.nilIfBlank {
+            return displayName
+        }
+
+        return model
+    }
+
+    func isHermesSessionArchived(_ session: HermesAPIClient.Session) -> Bool {
+        archivedHermesSessionIdSet.contains(session.id)
+    }
+
+    func archiveHermesSession(_ session: HermesAPIClient.Session) {
+        var ids = archivedHermesSessionIdSet
+        ids.insert(session.id)
+        archivedHermesSessionIds = serializeIds(ids)
+    }
+
+    func unarchiveHermesSession(_ session: HermesAPIClient.Session) {
+        var ids = archivedHermesSessionIdSet
+        ids.remove(session.id)
+        archivedHermesSessionIds = serializeIds(ids)
+    }
+
+    func isChatArchived(_ chat: Chat) -> Bool {
+        archivedChatIdSet.contains(chatArchiveId(chat))
+    }
+
+    func archiveChat(_ chat: Chat) {
+        var ids = archivedChatIdSet
+        ids.insert(chatArchiveId(chat))
+        archivedChatIds = serializeIds(ids)
+    }
+
+    func unarchiveChat(_ chat: Chat) {
+        var ids = archivedChatIdSet
+        ids.remove(chatArchiveId(chat))
+        archivedChatIds = serializeIds(ids)
+    }
+
+    private var archivedHermesSessionIdSet: Set<String> {
+        parseIds(archivedHermesSessionIds)
+    }
+
+    private var archivedChatIdSet: Set<String> {
+        parseIds(archivedChatIds)
+    }
+
+    private func chatArchiveId(_ chat: Chat) -> String {
+        chat.objectID.uriRepresentation().absoluteString
+    }
+
+    private func parseIds(_ rawValue: String) -> Set<String> {
+        Set(rawValue.split(separator: "\n").map(String.init).filter { !$0.isEmpty })
+    }
+
+    private func serializeIds(_ ids: Set<String>) -> String {
+        ids.sorted().joined(separator: "\n")
     }
 }
 
 extension SettingsFeature {
-    static let colorSchemes: [ColorScheme] = [
-        .automatic,
-        .light,
-        .dark
-    ]
-
-    static let tints: [Tint] = [
-        .green,
-        .yellow,
-        .orange,
-        .brown,
-        .red,
-        .pink,
-        .indigo,
-        .blue,
-    ]
-
-    static let symbolVariants: [SymbolVariant] = [
-        .fill,
-        .outline,
-    ]
-
     static let fontSizes: [FontSize] = [
         .large,
         .normal,
         .small,
     ]
 
-    enum ColorScheme: String, Hashable {
-        case automatic = "automatic", light = "light", dark = "dark"
-
-        var systemColorScheme: SwiftUI.ColorScheme? {
-            switch self {
-            case .automatic: return nil
-            case .light: return .light
-            case .dark: return .dark
-            }
-        }
-
-        var localizedKey: LocalizedStringKey {
-            switch self {
-            case .automatic: return LocalizedStringKey("SETTINGS_COLOR_SCHEME_AUTOMATIC")
-            case .light: return LocalizedStringKey("SETTINGS_COLOR_SCHEME_LIGHT")
-            case .dark: return LocalizedStringKey("SETTINGS_COLOR_SCHEME_DARK")
-            }
-        }
-    }
-
-    enum Tint: String, Hashable {
-        case green = "green"
-        case yellow = "yellow"
-        case orange = "orange"
-        case brown = "brown"
-        case red = "red"
-        case pink = "pink"
-        case indigo = "indigo"
-        case blue = "blue"
-
-        var color: Color {
-            switch self {
-            case .indigo: return .appIndigo
-            case .blue: return .appBlue
-            case .green: return .appGreen
-            case .yellow: return .appYellow
-            case .orange: return .appOrange
-            case .brown: return .appBrown
-            case .red: return .appRed
-            case .pink: return .appPink
-            }
-        }
-    }
-
-    enum SymbolVariant: String, Hashable {
-        case fill = "fill"
-        case outline = "outline"
-
-        var system: SymbolVariants {
-            switch self {
-            case .fill: return .fill
-            case .outline: return .none
-            }
-        }
+    enum AppTheme: String, Hashable {
+        case modern = "modern"
+        case nous = "nous"
+        case midnight = "midnight"
+        case ember = "ember"
+        case mono = "mono"
+        case cyberpunk = "cyberpunk"
+        case slate = "slate"
+        case hermesNous = "hermes-nous"
 
         var localizedKey: LocalizedStringKey {
             switch self {
-            case .fill: return LocalizedStringKey("SETTINGS_SYMBOL_VARIANT_FILL")
-            case .outline: return LocalizedStringKey("SETTINGS_SYMBOL_VARIANT_OUTLINE")
+            case .modern: return "Modern"
+            case .nous: return "Nous"
+            case .midnight: return "Midnight"
+            case .ember: return "Ember"
+            case .mono: return "Mono"
+            case .cyberpunk: return "Cyberpunk"
+            case .slate: return "Slate"
+            case .hermesNous: return "Hermes Nous"
+            }
+        }
+
+        var accent: Color {
+            theme(for: .dark).primary
+        }
+
+        var assistantBubble: Color {
+            theme(for: .dark).card
+        }
+
+        var userBubble: Color {
+            theme(for: .dark).userBubble
+        }
+
+        var preferredColorScheme: SwiftUI.ColorScheme {
+            switch self {
+            case .modern:
+                return .light
+            case .nous, .midnight, .ember, .mono, .cyberpunk, .slate, .hermesNous:
+                return .dark
             }
         }
     }
+
+    static let appThemes: [AppTheme] = [
+        .nous,
+        .midnight,
+        .ember,
+        .mono,
+        .cyberpunk,
+        .slate
+    ]
 
     enum FontSize: String, Hashable {
         case large = "large"
