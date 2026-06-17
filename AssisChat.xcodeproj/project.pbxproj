@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F60000012C20000100000001 /* AssisChatWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60000002C20000100000001 /* AssisChatWidgets.swift */; };
+		F60000032C20000100000001 /* AssisChatWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F60000022C20000100000001 /* AssisChatWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F60000052C20000100000001 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60000042C20000100000001 /* ShareViewController.swift */; };
+		F60000072C20000100000001 /* AssisChatShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F60000062C20000100000001 /* AssisChatShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F543A92529C44131000C61B5 /* SplashCodeSyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F543A92429C44131000C61B5 /* SplashCodeSyntaxHighlighter.swift */; };
 		F543A92729C444AC000C61B5 /* AcknowledgmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F543A92629C444AC000C61B5 /* AcknowledgmentView.swift */; };
 		F543A92D29C53749000C61B5 /* ProFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F543A92C29C53749000C61B5 /* ProFeature.swift */; };
@@ -28,6 +32,13 @@
 		F5B2554D29B8A56D0008DAA3 /* SelectChatHintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5B2554C29B8A56D0008DAA3 /* SelectChatHintView.swift */; };
 		F5BB8DD42BA9564800234039 /* README.zh.md in Resources */ = {isa = PBXBuildFile; fileRef = F5BB8DD32BA9564800234039 /* README.zh.md */; };
 		F5BB8DD62BA9568700234039 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = F5BB8DD52BA9568700234039 /* LICENSE */; };
+		F5C0A0012C1A000100000001 /* HermesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0A0002C1A000100000001 /* HermesCache.swift */; };
+		F5C0A0032C1A000100000001 /* HermesModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0A0022C1A000100000001 /* HermesModelCatalog.swift */; };
+		F5C0A0052C1A000100000001 /* HermesIntentRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0A0042C1A000100000001 /* HermesIntentRouter.swift */; };
+		F5C0A0072C1A000100000001 /* HermesAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0A0062C1A000100000001 /* HermesAppIntents.swift */; };
+		F5C0A0092C1A000100000001 /* NewHermesChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0A0082C1A000100000001 /* NewHermesChatView.swift */; };
+		F5C0A00B2C1A000100000001 /* HermesSessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0A00A2C1A000100000001 /* HermesSessionDetailView.swift */; };
+		F5C0A00D2C1A000100000001 /* ImagePromptAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0A00C2C1A000100000001 /* ImagePromptAttachment.swift */; };
 		A1B2C3D4E5F6012345678902 /* HermesTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6012345678901 /* HermesTheme.swift */; };
 		A1B2C3D4E5F6012345678913 /* JetBrainsMono-Regular.woff2 in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6012345678910 /* JetBrainsMono-Regular.woff2 */; };
 		A1B2C3D4E5F6012345678914 /* JetBrainsMono-Bold.woff2 in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6012345678911 /* JetBrainsMono-Bold.woff2 */; };
@@ -87,6 +98,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		F60000082C20000100000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F5E47E8829B497A60083BB31 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F60000142C20000100000001;
+			remoteInfo = AssisChatWidgets;
+		};
+		F60000092C20000100000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F5E47E8829B497A60083BB31 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F60000152C20000100000001;
+			remoteInfo = AssisChatShareExtension;
+		};
 		F5E47EA729B497A60083BB31 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F5E47E8829B497A60083BB31 /* Project object */;
@@ -104,9 +129,29 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		F600000A2C20000100000001 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F60000032C20000100000001 /* AssisChatWidgets.appex in Embed App Extensions */,
+				F60000072C20000100000001 /* AssisChatShareExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F60000002C20000100000001 /* AssisChatWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssisChatWidgets.swift; sourceTree = "<group>"; };
+		F60000022C20000100000001 /* AssisChatWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AssisChatWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F60000042C20000100000001 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		F60000062C20000100000001 /* AssisChatShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AssisChatShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F600000B2C20000100000001 /* AssisChatWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AssisChatWidgets.entitlements; sourceTree = "<group>"; };
+		F600000C2C20000100000001 /* AssisChatWidgets Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = Info.plist; path = AssisChatWidgets/Info.plist; sourceTree = SOURCE_ROOT; };
+		F600000D2C20000100000001 /* AssisChatShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AssisChatShareExtension.entitlements; sourceTree = "<group>"; };
+		F600000E2C20000100000001 /* AssisChatShareExtension Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = Info.plist; path = AssisChatShareExtension/Info.plist; sourceTree = SOURCE_ROOT; };
 		F543A92429C44131000C61B5 /* SplashCodeSyntaxHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashCodeSyntaxHighlighter.swift; sourceTree = "<group>"; };
 		F543A92629C444AC000C61B5 /* AcknowledgmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcknowledgmentView.swift; sourceTree = "<group>"; };
 		F543A92C29C53749000C61B5 /* ProFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProFeature.swift; sourceTree = "<group>"; };
@@ -117,6 +162,13 @@
 		F5B2554C29B8A56D0008DAA3 /* SelectChatHintView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectChatHintView.swift; sourceTree = "<group>"; };
 		F5BB8DD32BA9564800234039 /* README.zh.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.zh.md; sourceTree = "<group>"; };
 		F5BB8DD52BA9568700234039 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		F5C0A0002C1A000100000001 /* HermesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HermesCache.swift; sourceTree = "<group>"; };
+		F5C0A0022C1A000100000001 /* HermesModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HermesModelCatalog.swift; sourceTree = "<group>"; };
+		F5C0A0042C1A000100000001 /* HermesIntentRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HermesIntentRouter.swift; sourceTree = "<group>"; };
+		F5C0A0062C1A000100000001 /* HermesAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HermesAppIntents.swift; sourceTree = "<group>"; };
+		F5C0A0082C1A000100000001 /* NewHermesChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewHermesChatView.swift; sourceTree = "<group>"; };
+		F5C0A00A2C1A000100000001 /* HermesSessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HermesSessionDetailView.swift; sourceTree = "<group>"; };
+		F5C0A00C2C1A000100000001 /* ImagePromptAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePromptAttachment.swift; sourceTree = "<group>"; };
 		F5E47E9029B497A60083BB31 /* AssisChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AssisChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5E47E9329B497A60083BB31 /* AssisChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssisChatApp.swift; sourceTree = "<group>"; };
 		F5E47E9529B497A60083BB31 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
@@ -173,6 +225,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F600000F2C20000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F60000102C20000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F5E47E8D29B497A60083BB31 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -221,6 +287,8 @@
 		F5E47E8729B497A60083BB31 = {
 			isa = PBXGroup;
 			children = (
+				F60000112C20000100000001 /* AssisChatWidgets */,
+				F60000122C20000100000001 /* AssisChatShareExtension */,
 				F5BB8DD32BA9564800234039 /* README.zh.md */,
 				F5BB8DD52BA9568700234039 /* LICENSE */,
 				F5E47EFD29B5D29A0083BB31 /* README.md */,
@@ -237,10 +305,32 @@
 			isa = PBXGroup;
 			children = (
 				F5E47E9029B497A60083BB31 /* AssisChat.app */,
+				F60000022C20000100000001 /* AssisChatWidgets.appex */,
+				F60000062C20000100000001 /* AssisChatShareExtension.appex */,
 				F5E47EA629B497A60083BB31 /* AssisChatTests.xctest */,
 				F5E47EB029B497A60083BB31 /* AssisChatUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F60000112C20000100000001 /* AssisChatWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				F60000002C20000100000001 /* AssisChatWidgets.swift */,
+				F600000C2C20000100000001 /* AssisChatWidgets Info.plist */,
+				F600000B2C20000100000001 /* AssisChatWidgets.entitlements */,
+			);
+			path = AssisChatWidgets;
+			sourceTree = "<group>";
+		};
+		F60000122C20000100000001 /* AssisChatShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				F60000042C20000100000001 /* ShareViewController.swift */,
+				F600000E2C20000100000001 /* AssisChatShareExtension Info.plist */,
+				F600000D2C20000100000001 /* AssisChatShareExtension.entitlements */,
+			);
+			path = AssisChatShareExtension;
 			sourceTree = "<group>";
 		};
 		F5E47E9229B497A60083BB31 /* AssisChat */ = {
@@ -255,8 +345,13 @@
 				F5E47E9329B497A60083BB31 /* AssisChatApp.swift */,
 				F58E539A29DBF7380022E979 /* AppGroup.swift */,
 				F58E539D29DBF7C50022E979 /* SharedUserDefaults.swift */,
+				F5C0A0042C1A000100000001 /* HermesIntentRouter.swift */,
+				F5C0A0062C1A000100000001 /* HermesAppIntents.swift */,
 				F5E47E9529B497A60083BB31 /* Persistence.swift */,
 				F5E47E9A29B497A60083BB31 /* ContentView.swift */,
+				F5C0A0082C1A000100000001 /* NewHermesChatView.swift */,
+				F5C0A00A2C1A000100000001 /* HermesSessionDetailView.swift */,
+				F5C0A00C2C1A000100000001 /* ImagePromptAttachment.swift */,
 				A1B2C3D4E5F6012345678910 /* JetBrainsMono-Regular.woff2 */,
 				A1B2C3D4E5F6012345678911 /* JetBrainsMono-Bold.woff2 */,
 				A1B2C3D4E5F6012345678912 /* JetBrainsMono-Italic.woff2 */,
@@ -393,6 +488,8 @@
 			children = (
 				F5E47EED29B4F5850083BB31 /* ChattingAdapters */,
 				F5E47EF129B5A6AB0083BB31 /* SettingsFeature.swift */,
+				F5C0A0002C1A000100000001 /* HermesCache.swift */,
+				F5C0A0022C1A000100000001 /* HermesModelCatalog.swift */,
 				A1B2C3D4E5F6012345678901 /* HermesTheme.swift */,
 				F5E47EF929B5B6470083BB31 /* ChatSourceConfigView.swift */,
 				F5E47EF329B5AC380083BB31 /* SettingsView.swift */,
@@ -423,10 +520,13 @@
 				F5E47E8C29B497A60083BB31 /* Sources */,
 				F5E47E8D29B497A60083BB31 /* Frameworks */,
 				F5E47E8E29B497A60083BB31 /* Resources */,
+				F600000A2C20000100000001 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F60000162C20000100000001 /* PBXTargetDependency */,
+				F60000172C20000100000001 /* PBXTargetDependency */,
 			);
 			name = AssisChat;
 			packageProductDependencies = (
@@ -474,6 +574,40 @@
 			productReference = F5E47EB029B497A60083BB31 /* AssisChatUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		F60000142C20000100000001 /* AssisChatWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F60000182C20000100000001 /* Build configuration list for PBXNativeTarget "AssisChatWidgets" */;
+			buildPhases = (
+				F600001A2C20000100000001 /* Sources */,
+				F600000F2C20000100000001 /* Frameworks */,
+				F600001B2C20000100000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AssisChatWidgets;
+			productName = AssisChatWidgets;
+			productReference = F60000022C20000100000001 /* AssisChatWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		F60000152C20000100000001 /* AssisChatShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F60000192C20000100000001 /* Build configuration list for PBXNativeTarget "AssisChatShareExtension" */;
+			buildPhases = (
+				F600001C2C20000100000001 /* Sources */,
+				F60000102C20000100000001 /* Frameworks */,
+				F600001D2C20000100000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AssisChatShareExtension;
+			productName = AssisChatShareExtension;
+			productReference = F60000062C20000100000001 /* AssisChatShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -484,6 +618,12 @@
 				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
+					F60000142C20000100000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					F60000152C20000100000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
 					F5E47E8F29B497A60083BB31 = {
 						CreatedOnToolsVersion = 14.2;
 					};
@@ -516,6 +656,8 @@
 			projectRoot = "";
 			targets = (
 				F5E47E8F29B497A60083BB31 /* AssisChat */,
+				F60000142C20000100000001 /* AssisChatWidgets */,
+				F60000152C20000100000001 /* AssisChatShareExtension */,
 				F5E47EA529B497A60083BB31 /* AssisChatTests */,
 				F5E47EAF29B497A60083BB31 /* AssisChatUITests */,
 			);
@@ -523,6 +665,20 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		F600001B2C20000100000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F600001D2C20000100000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F5E47E8E29B497A60083BB31 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -557,6 +713,22 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		F600001A2C20000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F60000012C20000100000001 /* AssisChatWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F600001C2C20000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F60000052C20000100000001 /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F5E47E8C29B497A60083BB31 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -566,28 +738,35 @@
 				F543A92529C44131000C61B5 /* SplashCodeSyntaxHighlighter.swift in Sources */,
 				F5E47F0229B6178F0083BB31 /* CopyrightView.swift in Sources */,
 				F5E47EEC29B4EA0A0083BB31 /* MessageFeature.swift in Sources */,
+				F5C0A0052C1A000100000001 /* HermesIntentRouter.swift in Sources */,
 				F5E47EFA29B5B6470083BB31 /* ChatSourceConfigView.swift in Sources */,
 				F543A92729C444AC000C61B5 /* AcknowledgmentView.swift in Sources */,
 				F5E47EE729B4E8FB0083BB31 /* ChattingFeature.swift in Sources */,
 				F58E53A129DBFC720022E979 /* MessageContent.swift in Sources */,
 				F5E47E9429B497A60083BB31 /* AssisChatApp.swift in Sources */,
 				F5E47F0D29B706FF0083BB31 /* ChatEditor.swift in Sources */,
+				F5C0A0012C1A000100000001 /* HermesCache.swift in Sources */,
 				F5E47EE229B49D0E0083BB31 /* Haptics.swift in Sources */,
+				F5C0A0092C1A000100000001 /* NewHermesChatView.swift in Sources */,
 				F5E47E9929B497A60083BB31 /* AssisChat.xcdatamodeld in Sources */,
 				F5E47ECF29B498290083BB31 /* Color+Extensions.swift in Sources */,
 				F5FFE96F29F64F9000AD4C91 /* UniformProgressView.swift in Sources */,
 				F5E47EEF29B4F5A80083BB31 /* ChatGPTAdapter.swift in Sources */,
+				F5C0A0032C1A000100000001 /* HermesModelCatalog.swift in Sources */,
 				F5B2554D29B8A56D0008DAA3 /* SelectChatHintView.swift in Sources */,
 				F5E47EE929B4E9090083BB31 /* ChattingView.swift in Sources */,
+				F5C0A00D2C1A000100000001 /* ImagePromptAttachment.swift in Sources */,
 				A1B2C3D4E5F6012345678902 /* HermesTheme.swift in Sources */,
 				F5E47EFF29B5D8B80083BB31 /* View+Extensions.swift in Sources */,
 				F5E47EF429B5AC380083BB31 /* SettingsView.swift in Sources */,
 				F5E47EE429B49DF90083BB31 /* ChatIconSelector.swift in Sources */,
 				F5E47F0F29B708D00083BB31 /* EditChatView.swift in Sources */,
+				F5C0A0072C1A000100000001 /* HermesAppIntents.swift in Sources */,
 				F5E47ECB29B497FB0083BB31 /* Message+CoreDataProperties.swift in Sources */,
 				F5E47ECD29B497FB0083BB31 /* Chat+CoreDataProperties.swift in Sources */,
 				F5E47E9B29B497A60083BB31 /* ContentView.swift in Sources */,
 				F5E47ED329B498550083BB31 /* Notification+Extensions.swift in Sources */,
+				F5C0A00B2C1A000100000001 /* HermesSessionDetailView.swift in Sources */,
 				F5E47ECC29B497FB0083BB31 /* Chat+CoreDataClass.swift in Sources */,
 				F5E47EF229B5A6AB0083BB31 /* SettingsFeature.swift in Sources */,
 				F5E47ED929B4990A0083BB31 /* ChatFeature.swift in Sources */,
@@ -628,6 +807,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		F60000162C20000100000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F60000142C20000100000001 /* AssisChatWidgets */;
+			targetProxy = F60000082C20000100000001 /* PBXContainerItemProxy */;
+		};
+		F60000172C20000100000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F60000152C20000100000001 /* AssisChatShareExtension */;
+			targetProxy = F60000092C20000100000001 /* PBXContainerItemProxy */;
+		};
 		F5E47EA829B497A60083BB31 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = F5E47E8F29B497A60083BB31 /* AssisChat */;
@@ -954,6 +1143,98 @@
 			};
 			name = Release;
 		};
+		F600001E2C20000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = AssisChatWidgets/AssisChatWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2UTACZ8KMY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AssisChatWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.turnercore.AssisChatHermes.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F600001F2C20000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = AssisChatWidgets/AssisChatWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2UTACZ8KMY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AssisChatWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.turnercore.AssisChatHermes.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F60000202C20000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = AssisChatShareExtension/AssisChatShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2UTACZ8KMY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AssisChatShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.turnercore.AssisChatHermes.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F60000212C20000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = AssisChatShareExtension/AssisChatShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2UTACZ8KMY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AssisChatShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.turnercore.AssisChatHermes.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -989,6 +1270,24 @@
 			buildConfigurations = (
 				F5E47EC129B497A60083BB31 /* Debug */,
 				F5E47EC229B497A60083BB31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F60000182C20000100000001 /* Build configuration list for PBXNativeTarget "AssisChatWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F600001E2C20000100000001 /* Debug */,
+				F600001F2C20000100000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F60000192C20000100000001 /* Build configuration list for PBXNativeTarget "AssisChatShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F60000202C20000100000001 /* Debug */,
+				F60000212C20000100000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

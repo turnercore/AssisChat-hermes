@@ -47,30 +47,26 @@ struct ChattingView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             MessageInput(chat: chat)
         }
-        .background(HermesWorkspaceBackground(theme: theme).ignoresSafeArea())
-        .overlay(alignment: .topTrailing) {
-            ChatModelBadge(
-                currentModel: chat.model,
-                availableModels: availableModels,
-                onSelectModel: setChatModel
-            )
-            .padding(.top, 8)
-            .padding(.trailing, 12)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if !availableModels.isEmpty {
+                HStack {
+                    Spacer()
+                    ChatModelBadge(
+                        currentModel: chat.model,
+                        availableModels: availableModels,
+                        onSelectModel: setChatModel
+                    )
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.regularMaterial)
+            }
         }
+        .background(HermesWorkspaceBackground(theme: theme).ignoresSafeArea())
     }
 
     private var availableModels: [String] {
-        let configured = settingsFeature.configuredHermesModel.nilIfBlank
-        let values = settingsFeature.discoveredHermesModels + settingsFeature.activeModels + [configured].compactMap { $0 }
-        var seen = Set<String>()
-        return values
-            .compactMap { $0.nilIfBlank }
-            .filter { model in
-                guard !seen.contains(model) else { return false }
-                seen.insert(model)
-                return true
-            }
-            .sorted()
+        settingsFeature.availableHermesModels()
     }
 
     private func setChatModel(_ model: String) {
@@ -154,7 +150,7 @@ private struct MessagesEmpty: View {
 
     var body: some View {
         VStack {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .top) {
                     Image(systemName: "bubble.right")
                         .resizable()
@@ -162,17 +158,7 @@ private struct MessagesEmpty: View {
                         .frame(width: 20, height: 20)
                         .foregroundColor(Color.appGreen)
 
-                    Text("Send message directly")
-                }
-
-                HStack(alignment: .top) {
-                    Image(systemName: "point.3.connected.trianglepath.dotted")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(Color.accentColor)
-
-                    Text("Hermes sessions will appear as chat threads as the integration is refined.")
+                    Text("Send a message to start this chat.")
                         .multilineTextAlignment(.leading)
                 }
             }
@@ -430,6 +416,7 @@ private struct MessageInput: View {
     @EnvironmentObject private var essentialFeature: EssentialFeature
     @EnvironmentObject private var settingsFeature: SettingsFeature
     @EnvironmentObject private var chattingFeature: ChattingFeature
+    @EnvironmentObject private var messageFeature: MessageFeature
     @Environment(\.hermesTheme) private var theme
 
     @ObservedObject var chat: Chat
@@ -444,7 +431,7 @@ private struct MessageInput: View {
     }
 
     var sendButtonAvailable: Bool {
-        !text.isEmpty && !chat.receiving && adapterReady && !handling
+        text.nilIfBlank != nil && !chat.receiving && adapterReady && !handling
     }
 
     var body: some View {
@@ -499,6 +486,7 @@ private struct MessageInput: View {
                         .cornerRadius(10)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Add context")
 
                 if #available(iOS 16.0, macOS 13.0, *) {
                     TextField(adapterReady ? String(localized: "NEW_MESSAGE_HINT") : String(localized: "The model \"\(settingsFeature.displayName(forHermesModel: chat.model))\" is not available"), text: $text, axis: .vertical)
@@ -507,8 +495,9 @@ private struct MessageInput: View {
                         .cornerRadius(10)
                         .frame(minHeight: 45)
                         .lineLimit(1...3)
+                        .submitLabel(.send)
                         .textFieldStyle(.plain)
-                        .disabled(!adapterReady)
+                        .disabled(!adapterReady || handling)
                         .foregroundColor(handling ? .secondary : .primary)
 #if os(macOS)
                         .onSubmit {
@@ -521,8 +510,9 @@ private struct MessageInput: View {
                         .background(theme.input.opacity(0.72))
                         .frame(minHeight: 45)
                         .cornerRadius(10)
+                        .submitLabel(.send)
                         .textFieldStyle(.plain)
-                        .disabled(!adapterReady)
+                        .disabled(!adapterReady || handling)
                         .foregroundColor(handling ? .secondary : .primary)
 #if os(macOS)
                         .onSubmit {
@@ -532,11 +522,15 @@ private struct MessageInput: View {
                 }
 
                 Button {
-                    submit()
+                    if chat.receiving {
+                        messageFeature.stopReceivingMessage(for: chat)
+                    } else {
+                        submit()
+                    }
                 } label: {
                     if chat.receiving {
-                        UniformProgressView()
-                            .tint(theme.primary)
+                        Image(systemName: "stop.fill")
+                            .foregroundColor(theme.primary)
                     } else {
                         Image(systemName: "paperplane")
                             .foregroundColor(sendButtonAvailable ? theme.primaryForeground : theme.mutedForeground)
@@ -555,7 +549,8 @@ private struct MessageInput: View {
                 .padding(.vertical, 5)
 #endif
                 .clipShape(Rectangle())
-                .disabled(!sendButtonAvailable)
+                .disabled(!chat.receiving && !sendButtonAvailable)
+                .accessibilityLabel(chat.receiving ? "Stop response" : "Send message")
             }
 #if os(iOS)
             .padding(10)
@@ -588,14 +583,12 @@ private struct MessageInput: View {
     }
 
     func submit() {
-        guard sendButtonAvailable else { return }
+        guard sendButtonAvailable, let content = text.nilIfBlank else { return }
+        handling = true
         Task {
-            handling = true
-
-            _ = await chattingFeature.sendWithStream(content: text, to: chat)
-
+            defer { handling = false }
+            _ = await chattingFeature.sendWithStream(content: content, to: chat)
             text = ""
-            handling = false
         }
     }
 

@@ -104,4 +104,15 @@ extension MessageFeature {
 
         essentialFeature.persistData()
     }
+
+    func stopReceivingMessage(for chat: Chat) {
+        guard let message = chat.messages.last(where: \.receiving) else { return }
+
+        message.unmarkReceiving()
+        if message.content?.nilIfBlank == nil {
+            message.failedReason = .unknown
+        }
+
+        essentialFeature.persistData()
+    }
 }

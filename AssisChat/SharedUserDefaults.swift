@@ -33,6 +33,13 @@ class SharedUserDefaults {
     static let hermesDiscoveredModels = "settings:hermes:discoveredModels"
     static let hermesDefaultProfileDisplayName = "settings:hermes:defaultProfileDisplayName"
     static let hermesArchivedSessionIds = "settings:hermes:archivedSessionIds"
+    static let hermesPendingIntentRoute = "intent:hermes:route"
+    static let hermesPendingIntentSessionId = "intent:hermes:sessionId"
+    static let hermesPendingIntentSessionTitle = "intent:hermes:sessionTitle"
+    static let hermesPendingIntentSessionSource = "intent:hermes:sessionSource"
+    static let hermesPendingIntentSessionUpdatedAt = "intent:hermes:sessionUpdatedAt"
+    static let hermesPendingIntentPrompt = "intent:hermes:prompt"
+    static let hermesPendingIntentChatId = "intent:hermes:chatId"
     static let archivedChatIds = "settings:chats:archivedIds"
 
     // Appearance

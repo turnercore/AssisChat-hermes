@@ -38,6 +38,7 @@ class SettingsFeature: ObservableObject {
     let essentialFeature: EssentialFeature
 
     @Published private(set) var chattingAdapters: [String: ChattingAdapter] = [:]
+    private let hermesCache = HermesCache()
 
     var orderedAdapters: [ChattingAdapter] {
         chattingAdapters.map { (key: String, value: ChattingAdapter) in
@@ -67,6 +68,15 @@ class SettingsFeature: ObservableObject {
 
     var adapterReady: Bool {
         return !chattingAdapters.isEmpty
+    }
+
+    var hermesCacheKey: HermesCacheKey {
+        HermesCacheKey(
+            baseURL: configuredHermesBaseURL,
+            sessionId: configuredHermesSessionId,
+            sessionKey: configuredHermesSessionKey,
+            apiKey: configuredHermesAPIKey
+        )
     }
 
     init(essentialFeature: EssentialFeature) {
@@ -164,6 +174,53 @@ class SettingsFeature: ObservableObject {
         }
 
         return model
+    }
+
+    func availableHermesModels() -> [String] {
+        HermesModelCatalog.available(
+            discovered: discoveredHermesModels,
+            active: activeModels,
+            configured: configuredHermesModel
+        )
+    }
+
+    func shouldRefreshHermesProfiles(maxAge: TimeInterval = 300) -> Bool {
+        hermesCache.shouldRefreshProfiles(
+            for: hermesCacheKey,
+            hasDiscoveredModels: !discoveredHermesModels.isEmpty,
+            maxAge: maxAge
+        )
+    }
+
+    @MainActor
+    func markHermesProfilesRefreshed() {
+        hermesCache.markProfilesRefreshed(for: hermesCacheKey)
+    }
+
+    func cachedHermesSessionsIfUsable(maxAge: TimeInterval = 300) -> [HermesAPIClient.Session]? {
+        hermesCache.cachedSessions(for: hermesCacheKey, maxAge: maxAge)
+    }
+
+    func cachedHermesSessionsLastUpdated() -> Date? {
+        hermesCache.sessionsLastUpdated(for: hermesCacheKey)
+    }
+
+    @MainActor
+    func storeHermesSessions(_ sessions: [HermesAPIClient.Session]) {
+        hermesCache.storeSessions(sessions, for: hermesCacheKey)
+    }
+
+    func cachedHermesMessagesIfUsable(sessionId: String, maxAge: TimeInterval = 300) -> [HermesAPIClient.SessionMessage]? {
+        hermesCache.cachedMessages(sessionId: sessionId, key: hermesCacheKey, maxAge: maxAge)
+    }
+
+    func cachedHermesMessagesLastUpdated(sessionId: String) -> Date? {
+        hermesCache.messagesLastUpdated(sessionId: sessionId, key: hermesCacheKey)
+    }
+
+    @MainActor
+    func storeHermesMessages(_ messages: [HermesAPIClient.SessionMessage], for sessionId: String) {
+        hermesCache.storeMessages(messages, sessionId: sessionId, key: hermesCacheKey)
     }
 
     func isHermesSessionArchived(_ session: HermesAPIClient.Session) -> Bool {

@@ -612,11 +612,16 @@ struct HermesAPIClient {
         }
     }
 
-    func sessionMessages(sessionId: String) async throws -> SessionMessagesResponse {
+    func sessionMessages(sessionId: String, limit: Int = 80, offset: Int = 0) async throws -> SessionMessagesResponse {
+        let queryItems = [
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "offset", value: "\(offset)")
+        ]
+
         do {
-            return try await get(path: "api/sessions/\(sessionId)/messages")
+            return try await get(path: "api/sessions/\(sessionId)/messages", queryItems: queryItems)
         } catch ClientError.httpStatus(let status, _) where status == 404 {
-            return try await get(path: "v1/sessions/\(sessionId)/messages")
+            return try await get(path: "v1/sessions/\(sessionId)/messages", queryItems: queryItems)
         }
     }
 
@@ -729,6 +734,30 @@ struct HermesAPIClient {
 
     struct Health: Decodable {
         let status: String
+
+        enum CodingKeys: String, CodingKey {
+            case ok
+            case status
+        }
+
+        init(status: String) {
+            self.status = status
+        }
+
+        init(from decoder: Swift.Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let status = try? container.decode(String.self, forKey: .status), !status.isEmpty {
+                self.status = status
+                return
+            }
+
+            if let ok = try? container.decode(Bool.self, forKey: .ok) {
+                self.status = ok ? "healthy" : "error"
+                return
+            }
+
+            self.status = "unknown"
+        }
     }
 
     struct DetailedHealth: Decodable {
@@ -863,8 +892,19 @@ struct HermesAPIClient {
         let source: String?
         let updatedAt: String?
 
+        init(id: String, title: String?, source: String?, updatedAt: String?) {
+            rawId = id
+            sessionId = nil
+            self.title = title
+            self.source = source
+            self.updatedAt = updatedAt
+        }
+
         var id: String {
-            rawId ?? sessionId ?? title ?? "session"
+            rawId?.nilIfBlank
+                ?? sessionId?.nilIfBlank
+                ?? [title, source, updatedAt].compactMap { $0?.nilIfBlank }.joined(separator: "|").nilIfBlank
+                ?? "session"
         }
 
         var displayTitle: String {
@@ -897,9 +937,13 @@ struct HermesAPIClient {
         let role: String?
         private let rawContent: JSONValue?
         private let text: JSONValue?
+        private let createdAt: JSONValue?
 
         var id: String {
-            rawId?.description.nilIfBlank ?? messageId?.description.nilIfBlank ?? content ?? "message"
+            rawId?.description.nilIfBlank
+                ?? messageId?.description.nilIfBlank
+                ?? [role, createdAt?.description, content].compactMap { $0?.nilIfBlank }.joined(separator: "|").nilIfBlank
+                ?? "message"
         }
 
         var content: String? {
@@ -912,6 +956,7 @@ struct HermesAPIClient {
             case role
             case rawContent = "content"
             case text
+            case createdAt = "created_at"
         }
     }
 

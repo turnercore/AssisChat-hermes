@@ -5,6 +5,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject private var settingsFeature: SettingsFeature
@@ -157,6 +158,7 @@ private struct HermesDashboardContent: View {
     @State private var selectedSession: HermesAPIClient.Session?
     @State private var messages: [HermesAPIClient.SessionMessage] = []
     @State private var runInput = ""
+    @State private var lastRunInput: String?
     @State private var activeRun: HermesAPIClient.RunStatus?
     @State private var connectionError: String?
     @State private var capabilitiesError: String?
@@ -164,6 +166,8 @@ private struct HermesDashboardContent: View {
     @State private var messagesError: String?
     @State private var runError: String?
     @State private var loading = false
+    @State private var loadingMessages = false
+    @State private var stoppingRunId: String?
 
     var body: some View {
         Group {
@@ -173,7 +177,7 @@ private struct HermesDashboardContent: View {
                         .foregroundColor(health == "ok" ? .appGreen : .secondary)
                     Spacer()
                     Button("Refresh") {
-                        Task { await refresh() }
+                        Task { await refresh(force: true) }
                     }
                     .disabled(loading)
                 }
@@ -222,11 +226,13 @@ private struct HermesDashboardContent: View {
                     ForEach(sessions) { session in
                         Button {
                             selectedSession = session
+                            messages = []
+                            messagesError = nil
                             Task { await loadMessages(for: session) }
                         } label: {
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text(session.title?.nilIfBlank ?? session.id)
+                                    Text(session.displayTitle)
                                     if let source = session.source {
                                         Text(source)
                                             .font(.footnote)
@@ -246,7 +252,13 @@ private struct HermesDashboardContent: View {
 
             if selectedSession != nil {
                 Section("Messages") {
-                    if messages.isEmpty {
+                    if loadingMessages && messages.isEmpty {
+                        HStack {
+                            ProgressView()
+                            Text("Loading messages")
+                                .foregroundColor(.secondary)
+                        }
+                    } else if messages.isEmpty {
                         Text(messagesError ?? "No messages returned for this session.")
                             .foregroundColor(.secondary)
                     } else {
@@ -255,7 +267,8 @@ private struct HermesDashboardContent: View {
                                 Text(message.role ?? "message")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
-                                Text(message.content ?? "")
+                                Text(message.content?.nilIfBlank ?? "No content")
+                                    .foregroundColor(message.content?.nilIfBlank == nil ? .secondary : .primary)
                             }
                         }
                     }
@@ -280,15 +293,15 @@ private struct HermesDashboardContent: View {
                     Button("Start Run") {
                         Task { await startRun() }
                     }
-                    .disabled(runInput.nilIfBlank == nil || loading)
+                    .disabled(runInput.nilIfBlank == nil || loading || stoppingRunId != nil)
 
                     Spacer()
 
                     if let run = activeRun, let runId = run.runId {
-                        Button("Stop") {
+                        Button(stoppingRunId == runId ? "Stopping" : "Stop") {
                             Task { await stopRun(runId: runId) }
                         }
-                        .disabled(!capabilities["run_stop", default: false])
+                        .disabled(!capabilities["run_stop", default: false] || stoppingRunId != nil)
                     }
                 }
 
@@ -304,14 +317,25 @@ private struct HermesDashboardContent: View {
                 }
 
                 if let runError {
-                    Text(runError)
-                        .font(.footnote)
-                        .foregroundColor(.appRed)
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(runError)
+                            .font(.footnote)
+                            .foregroundColor(.appRed)
+
+                        Spacer()
+
+                        if lastRunInput?.nilIfBlank != nil {
+                            Button("Retry") {
+                                Task { await retryRun() }
+                            }
+                            .disabled(loading || stoppingRunId != nil)
+                        }
+                    }
                 }
             }
             .listRowBackground(theme.card.opacity(0.86))
         }
-        .task {
+        .task(id: settingsFeature.hermesCacheKey) {
             await refresh()
         }
     }
@@ -333,11 +357,15 @@ private struct HermesDashboardContent: View {
     }
 
     @MainActor
-    private func refresh() async {
+    private func refresh(force: Bool = false) async {
         guard let client else {
             health = "Configure Hermes first"
             connectionError = nil
             return
+        }
+
+        if let cached = settingsFeature.cachedHermesSessionsIfUsable(), !force {
+            sessions = cached
         }
 
         loading = true
@@ -364,19 +392,30 @@ private struct HermesDashboardContent: View {
             capabilitiesError = error.localizedDescription
         }
 
-        let profileCandidates = await client.profileCandidates()
-        if !profileCandidates.isEmpty {
-            discoveredModels = profileCandidates
-            settingsFeature.updateHermesModels(profileCandidates)
-            model = settingsFeature.configuredHermesModel
+        if settingsFeature.shouldRefreshHermesProfiles() {
+            let profileCandidates = await client.profileCandidates()
+            settingsFeature.markHermesProfilesRefreshed()
+            if !profileCandidates.isEmpty {
+                discoveredModels = profileCandidates
+                settingsFeature.updateHermesModels(profileCandidates)
+                model = settingsFeature.configuredHermesModel
+            } else if discoveredModels.isEmpty {
+                discoveredModels = settingsFeature.discoveredHermesModels
+            }
         } else if discoveredModels.isEmpty {
             discoveredModels = settingsFeature.discoveredHermesModels
         }
 
         do {
-            sessions = try await client.sessions().items
+            if let cached = settingsFeature.cachedHermesSessionsIfUsable(), !force {
+                sessions = cached
+            } else {
+                let loadedSessions = try await client.sessions().items
+                sessions = loadedSessions
+                settingsFeature.storeHermesSessions(loadedSessions)
+            }
+            reconcileSelectedSession()
         } catch {
-            sessions = []
             sessionsError = error.localizedDescription
         }
     }
@@ -385,42 +424,112 @@ private struct HermesDashboardContent: View {
     private func loadMessages(for session: HermesAPIClient.Session) async {
         guard let client else { return }
 
+        if let cached = settingsFeature.cachedHermesMessagesIfUsable(sessionId: session.id) {
+            messages = cached
+            messagesError = nil
+            return
+        }
+
+        loadingMessages = true
+        defer { loadingMessages = false }
         messagesError = nil
         do {
-            messages = try await client.sessionMessages(sessionId: session.id).items
+            let loadedMessages = try await client.sessionMessages(sessionId: session.id).items
+            guard selectedSession?.id == session.id else { return }
+            messages = loadedMessages
+            settingsFeature.storeHermesMessages(loadedMessages, for: session.id)
+        } catch is CancellationError {
+            return
         } catch {
-            messages = []
+            guard selectedSession?.id == session.id else { return }
             messagesError = error.localizedDescription
         }
     }
 
     @MainActor
     private func startRun() async {
-        guard let client, let input = runInput.nilIfBlank else { return }
+        guard !loading, let client, let input = runInput.nilIfBlank else { return }
 
         loading = true
         defer { loading = false }
 
         runError = nil
+        lastRunInput = input
         do {
             let run = try await client.run(input: input, sessionId: selectedSession?.id)
+            HermesRunNotifications.notify(title: "Hermes run started", body: input)
             activeRun = try await client.runStatus(runId: run.runId)
+            if let status = activeRun?.status.nilIfBlank {
+                HermesRunNotifications.notify(title: "Hermes run \(status)", body: activeRun?.output?.nilIfBlank ?? input)
+            }
             runInput = ""
+            lastRunInput = nil
         } catch {
             runError = error.localizedDescription
+            HermesRunNotifications.notify(title: "Hermes run failed", body: error.localizedDescription)
         }
     }
 
     @MainActor
-    private func stopRun(runId: String) async {
-        guard let client else { return }
+    private func retryRun() async {
+        guard let input = lastRunInput?.nilIfBlank else { return }
+        runInput = input
+        await startRun()
+    }
 
+    @MainActor
+    private func stopRun(runId: String) async {
+        guard stoppingRunId == nil, let client else { return }
+
+        stoppingRunId = runId
+        defer { stoppingRunId = nil }
         do {
             _ = try await client.stopRun(runId: runId)
             activeRun = try await client.runStatus(runId: runId)
+            HermesRunNotifications.notify(title: "Hermes run stopped", body: activeRun?.status ?? runId)
         } catch {
             runError = error.localizedDescription
+            HermesRunNotifications.notify(title: "Hermes stop failed", body: error.localizedDescription)
         }
+    }
+
+    private func reconcileSelectedSession() {
+        guard let selectedSession else { return }
+        if let updatedSession = sessions.first(where: { $0.id == selectedSession.id }) {
+            self.selectedSession = updatedSession
+        } else {
+            self.selectedSession = nil
+            messages = []
+            messagesError = nil
+        }
+    }
+}
+
+private enum HermesRunNotifications {
+    static func notify(title: String, body: String) {
+        #if os(iOS)
+        Task {
+            let center = UNUserNotificationCenter.current()
+            do {
+                let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+                guard granted else { return }
+
+                let content = UNMutableNotificationContent()
+                content.title = title
+                content.body = String(body.prefix(240))
+                content.sound = .default
+
+                let request = UNNotificationRequest(
+                    identifier: "hermes.run.\(UUID().uuidString)",
+                    content: content,
+                    trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+                )
+                try await center.add(request)
+            } catch {
+                // Notification delivery is helpful but should never block a run.
+            }
+        }
+        #endif
     }
 }
 

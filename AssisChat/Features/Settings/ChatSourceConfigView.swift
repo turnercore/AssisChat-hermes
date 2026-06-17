@@ -77,10 +77,11 @@ private struct HermesContent: View {
 
             Section {
 #if os(iOS)
-                TextField("http://host:8642", text: $baseURL)
-                    .keyboardType(.URL)
-                    .textInputAutocapitalization(.never)
-                    .disableAutocorrection(true)
+            TextField("http://host:8642", text: $baseURL)
+                .keyboardType(.URL)
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .submitLabel(.next)
 #else
                 TextField("", text: $baseURL)
                     .disableAutocorrection(true)
@@ -94,9 +95,13 @@ private struct HermesContent: View {
 
             Section {
 #if os(iOS)
-                SecureField("API_SERVER_KEY", text: $apiKey)
-                    .textInputAutocapitalization(.never)
-                    .disableAutocorrection(true)
+            SecureField("API_SERVER_KEY", text: $apiKey)
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .submitLabel(.go)
+                .onSubmit {
+                    validateAndSave()
+                }
 #else
                 SecureField("", text: $apiKey)
                     .disableAutocorrection(true)
@@ -125,9 +130,9 @@ private struct HermesContent: View {
             }
 
             Section {
-                Toggle("Advanced Hermes Options", isOn: $showAdvancedOptions)
+            Toggle("Advanced Hermes Options", isOn: $showAdvancedOptions)
             } footer: {
-                Text("Most setups do not need these. Use advanced options only when binding requests to a specific Hermes session.")
+                Text(showAdvancedOptions ? "Session headers are sent with every Hermes request from this app." : "Most setups do not need these.")
             }
 
             if showAdvancedOptions {
@@ -176,7 +181,8 @@ private struct HermesContent: View {
                     .foregroundColor(theme.primaryForeground)
                     .cornerRadius(10)
                 }
-                .disabled(validating)
+                .disabled(validating || apiKey.nilIfBlank == nil)
+                .opacity(validating || apiKey.nilIfBlank == nil ? 0.72 : 1)
                 .listRowInsets(EdgeInsets())
                 .buttonStyle(.plain)
             } footer: {
@@ -191,21 +197,29 @@ private struct HermesContent: View {
 #endif
         .onAppear {
             defaultProfileDisplayName = settingsFeature.hermesDefaultProfileDisplayName
+            showAdvancedOptions = sessionId.nilIfBlank != nil || sessionKey.nilIfBlank != nil
         }
     }
 
     func validateAndSave() {
+        guard !validating else { return }
+        guard let token = apiKey.nilIfBlank else {
+            essentialFeature.appendAlert(alert: ErrorAlert(message: "SETTINGS_CHAT_SOURCE_NO_API_KEY"))
+            return
+        }
+        if ProviderEndpoint.normalizedBaseURL(baseURL.nilIfBlank, defaultValue: "http://127.0.0.1:8642") == nil {
+            essentialFeature.appendAlert(alert: ErrorAlert(message: "Invalid Hermes server URL"))
+            return
+        }
+
         Task {
-            if apiKey.isEmpty {
-                essentialFeature.appendAlert(alert: ErrorAlert(message: "SETTINGS_CHAT_SOURCE_NO_API_KEY"))
-                return
-            }
+            validating = true
+            defer { validating = false }
 
             do {
-                validating = true
-                settingsFeature.hermesDefaultProfileDisplayName = defaultProfileDisplayName
+                settingsFeature.hermesDefaultProfileDisplayName = defaultProfileDisplayName.trimmingCharacters(in: .whitespacesAndNewlines)
                 let adapter = try await settingsFeature.validateAndConfigHermes(
-                    apiKey: apiKey,
+                    apiKey: token,
                     baseURL: baseURL.nilIfBlank,
                     sessionId: sessionId.nilIfBlank,
                     sessionKey: sessionKey.nilIfBlank
@@ -225,8 +239,6 @@ private struct HermesContent: View {
             } catch {
                 essentialFeature.appendAlert(alert: ErrorAlert(message: LocalizedStringKey(error.localizedDescription)))
             }
-
-            validating = false
         }
     }
 }

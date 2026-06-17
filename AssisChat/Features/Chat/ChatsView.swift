@@ -82,6 +82,10 @@ private struct ChatList: View {
     @State private var hermesSessions: [HermesAPIClient.Session] = []
     @State private var loadingSessions = false
     @State private var sessionError: String?
+    @State private var loadedCacheKey: HermesCacheKey?
+    @State private var hasMoreHermesSessions = false
+
+    private let sessionPageSize = 40
 
     @FetchRequest(
         sortDescriptors: [
@@ -100,6 +104,10 @@ private struct ChatList: View {
 
     private var activeHermesSessions: [HermesAPIClient.Session] {
         hermesSessions.filter { !settingsFeature.isHermesSessionArchived($0) }
+    }
+
+    private var visibleActiveHermesSessions: [HermesAPIClient.Session] {
+        activeHermesSessions
     }
 
     private var archivedHermesSessions: [HermesAPIClient.Session] {
@@ -188,6 +196,12 @@ private struct ChatList: View {
 
             if settingsFeature.adapterReady {
                 Section("HERMES SESSIONS") {
+                    if let updatedAt = settingsFeature.cachedHermesSessionsLastUpdated(), !hermesSessions.isEmpty {
+                        Label("Last updated \(updatedAt.formatted(date: .omitted, time: .shortened))", systemImage: "clock")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
                     if loadingSessions && hermesSessions.isEmpty {
                         HStack {
                             ProgressView()
@@ -203,8 +217,28 @@ private struct ChatList: View {
                             .font(.footnote)
                             .foregroundColor(.secondary)
                     } else {
-                        ForEach(activeHermesSessions) { session in
+                        ForEach(visibleActiveHermesSessions) { session in
                             hermesSessionRow(session)
+                        }
+
+                        if hasMoreHermesSessions {
+                            Button {
+                                Task { await loadMoreHermesSessions() }
+                            } label: {
+                                Label(loadingSessions ? "Loading more" : "Load more sessions", systemImage: "ellipsis.circle")
+                            }
+                            .font(.footnote.weight(.semibold))
+                            .disabled(loadingSessions)
+                        }
+
+                        if loadingSessions {
+                            Label("Updating sessions", systemImage: "arrow.triangle.2.circlepath")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        } else if let sessionError {
+                            Label("Could not refresh: \(sessionError)", systemImage: "exclamationmark.triangle")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
                         }
                     }
                 }
@@ -250,20 +284,11 @@ private struct ChatList: View {
         .scrollContentBackgroundIfAvailable(.hidden)
         .environment(\.defaultMinListRowHeight, 54)
         .animation(.easeOut, value: chats.count)
-        .task {
-            await refreshHermesSessions()
-        }
-        .onChange(of: settingsFeature.adapterReady) { _ in
-            Task { await refreshHermesSessions() }
-        }
-        .onChange(of: settingsFeature.configuredHermesBaseURL ?? "") { _ in
-            Task { await refreshHermesSessions() }
-        }
-        .onChange(of: settingsFeature.configuredHermesSessionId ?? "") { _ in
-            Task { await refreshHermesSessions() }
+        .task(id: settingsFeature.hermesCacheKey) {
+            await loadHermesSessions()
         }
         .refreshable {
-            await refreshHermesSessions()
+            await loadHermesSessions(force: true)
         }
     }
 
@@ -382,26 +407,57 @@ private struct ChatList: View {
     }
 
     @MainActor
-    private func refreshHermesSessions() async {
+    private func loadHermesSessions(force: Bool = false) async {
         guard settingsFeature.adapterReady else {
             hermesSessions = []
             sessionError = "Configure DaisyChat first."
+            loadedCacheKey = settingsFeature.hermesCacheKey
             return
         }
         guard let client else {
             hermesSessions = []
             sessionError = "DaisyChat is missing a local API key or server URL."
+            loadedCacheKey = settingsFeature.hermesCacheKey
             return
         }
+
+        let cacheKey = settingsFeature.hermesCacheKey
+        if let cached = settingsFeature.cachedHermesSessionsIfUsable(), !force {
+            hermesSessions = cached
+            hasMoreHermesSessions = cached.count >= sessionPageSize
+            sessionError = nil
+            loadedCacheKey = cacheKey
+            return
+        }
+
+        if !force, loadedCacheKey == cacheKey, !hermesSessions.isEmpty {
+            return
+        }
+
+        if hermesSessions.isEmpty,
+           let cached = settingsFeature.cachedHermesSessionsIfUsable(maxAge: 1_800) {
+            hermesSessions = cached
+            hasMoreHermesSessions = cached.count >= sessionPageSize
+        }
+
+        guard !loadingSessions else { return }
 
         loadingSessions = true
         defer { loadingSessions = false }
 
         do {
-            hermesSessions = try await client.sessions(limit: 100).items
+            let sessions = try await client.sessions(limit: sessionPageSize, offset: 0).items
+            hermesSessions = sessions
+            hasMoreHermesSessions = sessions.count == sessionPageSize
+            reconcileSelectedSession(with: sessions)
+            settingsFeature.storeHermesSessions(sessions)
             sessionError = nil
+            loadedCacheKey = cacheKey
+        } catch is CancellationError {
+            return
         } catch {
             sessionError = error.localizedDescription
+            loadedCacheKey = cacheKey
         }
     }
 
@@ -423,6 +479,44 @@ private struct ChatList: View {
 
     private func archiveLocalChats(_ indices: IndexSet) {
         indices.map { activeChats[$0] }.forEach(settingsFeature.archiveChat)
+    }
+
+    @MainActor
+    private func loadMoreHermesSessions() async {
+        guard !loadingSessions, let client, hasMoreHermesSessions else { return }
+
+        loadingSessions = true
+        defer { loadingSessions = false }
+
+        do {
+            let nextSessions = try await client.sessions(limit: sessionPageSize, offset: hermesSessions.count).items
+            hermesSessions = mergeSessions(hermesSessions + nextSessions)
+            hasMoreHermesSessions = nextSessions.count == sessionPageSize
+            settingsFeature.storeHermesSessions(hermesSessions)
+            sessionError = nil
+        } catch {
+            sessionError = error.localizedDescription
+        }
+    }
+
+    private func reconcileSelectedSession(with sessions: [HermesAPIClient.Session]) {
+        guard
+            let selectedHermesSession,
+            sessions.contains(where: { $0.id == selectedHermesSession.id }) == false
+        else {
+            return
+        }
+
+        onStartNewSession?()
+    }
+
+    private func mergeSessions(_ sessions: [HermesAPIClient.Session]) -> [HermesAPIClient.Session] {
+        var seen = Set<String>()
+        return sessions.filter { session in
+            guard !seen.contains(session.id) else { return false }
+            seen.insert(session.id)
+            return true
+        }
     }
 }
 

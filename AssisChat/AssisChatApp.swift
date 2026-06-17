@@ -19,6 +19,7 @@ struct AssisChatApp: App {
 
     init() {
         SharedUserDefaults.migrateIfNeeded()
+        Self.applyDebugHermesLaunchConfiguration()
         HermesFontLoader.registerBundledFonts()
 
         let essentialFeature = EssentialFeature(persistenceController: persistenceController)
@@ -101,6 +102,26 @@ struct AssisChatApp: App {
             .preferredColorScheme(resolvedColorScheme)
             .tint(theme.primary)
             .symbolVariant(.fill)
+        }
+        #endif
+    }
+
+    private static func applyDebugHermesLaunchConfiguration() {
+        #if DEBUG
+        let environment = ProcessInfo.processInfo.environment
+        guard
+            let baseURL = environment["HERMES_TEST_BASE_URL"]?.nilIfBlank,
+            let apiKey = environment["HERMES_TEST_API_KEY"]?.nilIfBlank
+        else {
+            return
+        }
+
+        SharedUserDefaults.shared.set(baseURL, forKey: SharedUserDefaults.hermesBaseURL)
+        try? KeychainSecrets.set(apiKey, for: SharedUserDefaults.hermesAPIKey)
+
+        if let model = environment["HERMES_TEST_MODEL"]?.nilIfBlank {
+            SharedUserDefaults.shared.set(model, forKey: SharedUserDefaults.hermesModel)
+            SharedUserDefaults.shared.set([model], forKey: SharedUserDefaults.hermesDiscoveredModels)
         }
         #endif
     }
